@@ -1,0 +1,8 @@
+{
+  "name": "design-system-root",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter './apps/*' run dev",
+    "new-project": "bash scripts/new-project.sh"
+  }
+}

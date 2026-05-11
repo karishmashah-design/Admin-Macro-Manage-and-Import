@@ -1,0 +1,71 @@
+import React from "react";
+
+const variantStyles = {
+  success: "text-[var(--foreground-semantic-success,#479e4c)]",
+  info:    "text-[var(--foreground-semantic-info,#1132ee)]",
+  warning: "text-[var(--foreground-semantic-warning,#cc7a00)]",
+  error:   "text-[var(--foreground-semantic-danger,#bb1411)]",
+  default: "text-[var(--foreground-secondary,#666)]",
+};
+
+export type BadgeProps = {
+  label: string;
+  variant?: keyof typeof variantStyles;
+  icon?: React.ReactNode;
+  size?: "small" | "medium";
+  className?: string;
+};
+
+export function Badge({
+  label,
+  variant = "default",
+  icon,
+  size = "small",
+  className = "",
+}: BadgeProps) {
+  return (
+    <div
+      className={`inline-flex items-center gap-[4px] font-['Lato',sans-serif] font-bold leading-[1.2]
+        ${size === "small" ? "text-[12px] tracking-[0.24px]" : "text-[13px] tracking-[0.13px]"}
+        ${variantStyles[variant]} ${className}`}
+      style={{ fontFeatureSettings: "'ss07'" }}
+    >
+      {icon && <span className="flex items-center shrink-0">{icon}</span>}
+      <span>{label}</span>
+    </div>
+  );
+}
+
+const visitStatusConfig = {
+  Generated:  { variant: "success" as const, icon: "check" },
+  Uploading:  { variant: "default" as const, icon: "upload" },
+  Processing: { variant: "info" as const,    icon: "autorenew" },
+  Error:      { variant: "error" as const,   icon: "error" },
+  "In Queue": { variant: "warning" as const, icon: "more_horiz" },
+};
+
+export type VisitStatusValue = keyof typeof visitStatusConfig;
+
+export type VisitStatusProps = {
+  status: VisitStatusValue;
+  className?: string;
+};
+
+export function VisitStatus({ status, className = "" }: VisitStatusProps) {
+  const { variant, icon } = visitStatusConfig[status];
+  return (
+    <Badge
+      label={status}
+      variant={variant}
+      icon={
+        <span
+          className="material-symbols-rounded"
+          style={{ fontSize: 14, fontVariationSettings: "'FILL' 1", lineHeight: 1 }}
+        >
+          {icon}
+        </span>
+      }
+      className={className}
+    />
+  );
+}

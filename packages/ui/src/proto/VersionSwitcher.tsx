@@ -1,0 +1,107 @@
+import React, { useState, useRef } from "react";
+
+export type ScreenDef = {
+  round: string;
+  direction: string;
+  component: React.ComponentType;
+};
+
+type Props = {
+  screens: ScreenDef[];
+};
+
+export function VersionSwitcher({ screens }: Props) {
+  const rounds = [...new Set(screens.map((s) => s.round))];
+  const [activeRound, setActiveRound] = useState(rounds[0]);
+
+  const directionsForRound = screens.filter((s) => s.round === activeRound);
+  const [activeDirection, setActiveDirection] = useState(directionsForRound[0]?.direction);
+
+  const handleRoundClick = (round: string) => {
+    setActiveRound(round);
+    const first = screens.find((s) => s.round === round);
+    setActiveDirection(first?.direction ?? "");
+  };
+
+  const active = screens.find(
+    (s) => s.round === activeRound && s.direction === activeDirection
+  );
+  const ActiveScreen = active?.component ?? (() => null);
+
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const dragOffset = useRef<{ x: number; y: number } | null>(null);
+
+  function onMouseDown(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).tagName === "BUTTON") return;
+    e.preventDefault();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+    function onMouseMove(ev: MouseEvent) {
+      if (!dragOffset.current) return;
+      setPos({ x: ev.clientX - dragOffset.current.x, y: ev.clientY - dragOffset.current.y });
+    }
+    function onMouseUp() {
+      dragOffset.current = null;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    }
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }
+
+  const floatStyle: React.CSSProperties = pos
+    ? { position: "fixed", left: pos.x, top: pos.y, bottom: "auto", transform: "none" }
+    : {};
+
+  return (
+    <div className="relative w-full h-full">
+      <ActiveScreen />
+
+      {/* Floating switcher */}
+      <div
+        onMouseDown={onMouseDown}
+        style={floatStyle}
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-[6px] bg-white border border-[rgba(0,0,0,0.1)] rounded-[12px] shadow-lg px-[10px] py-[8px] select-none cursor-grab active:cursor-grabbing"
+      >
+        {/* Rounds */}
+        <div className="flex items-center gap-[4px]">
+          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] uppercase mr-[4px] shrink-0">Round</span>
+          {rounds.map((round) => (
+            <button
+              key={round}
+              onClick={() => handleRoundClick(round)}
+              className={`h-[24px] px-[8px] rounded-[6px] text-[12px] font-bold tracking-[0.12px] transition-colors outline-none
+                ${activeRound === round
+                  ? "bg-[#1a1a1a] text-white"
+                  : "text-[#666] hover:bg-[#f2f2f2]"
+                }`}
+              style={{ fontFamily: "Lato, sans-serif", fontFeatureSettings: "'ss07'" }}
+            >
+              {round}
+            </button>
+          ))}
+        </div>
+
+        {/* Directions */}
+        <div className="flex items-center gap-[4px]">
+          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] uppercase mr-[4px] shrink-0">Dir</span>
+          {directionsForRound.map((s) => (
+            <button
+              key={s.direction}
+              onClick={() => setActiveDirection(s.direction)}
+              className={`h-[24px] px-[8px] rounded-[6px] text-[12px] font-bold tracking-[0.12px] transition-colors outline-none
+                ${activeDirection === s.direction
+                  ? "bg-[#1132ee] text-white"
+                  : "text-[#666] hover:bg-[#f2f2f2]"
+                }`}
+              style={{ fontFamily: "Lato, sans-serif", fontFeatureSettings: "'ss07'" }}
+            >
+              {s.direction}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
