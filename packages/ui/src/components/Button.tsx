@@ -79,7 +79,8 @@ const iconSizes = {
 const iconVariants = {
   primary:   "bg-[var(--foreground-primary,#1a1a1a)] text-[var(--foreground-oninverse,white)] hover:bg-[var(--neutral-800,#333)] active:bg-[var(--neutral-700,#4d4d4d)]",
   secondary: "border border-[var(--neutral-1000,black)] border-solid bg-transparent hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
-  tertiary:  "bg-transparent hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
+  tertiary:          "bg-transparent text-[var(--accent,#1132ee)] hover:bg-[var(--litmus-25,#f1f3fe)] active:bg-[var(--litmus-25,#f1f3fe)]",
+  "tertiary-neutral": "bg-transparent text-[var(--foreground-secondary,#666)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
   accent:    "bg-[var(--accent,#1132ee)] text-white hover:bg-[var(--hover,#0d28bf)] active:bg-[var(--active,#0a1e8f)]",
   magic:     "text-white hover:opacity-90 active:opacity-80",
 };

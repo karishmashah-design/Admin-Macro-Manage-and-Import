@@ -7,7 +7,8 @@ export type SecondaryNavItemProps = {
   age?: number;
   gender?: "M" | "F" | "Other";
   duration?: string;
-  status: VisitStatusValue;
+  time?: string;
+  status?: VisitStatusValue;
   isSelected?: boolean;
   onClick?: () => void;
   className?: string;
@@ -19,14 +20,25 @@ export function SecondaryNavItem({
   age,
   gender,
   duration,
+  time,
   status,
   isSelected = false,
   onClick,
   className = "",
 }: SecondaryNavItemProps) {
-  const meta = [chiefComplaint, age != null && gender ? `${age} · ${gender}` : undefined]
-    .filter(Boolean)
-    .join(" · ");
+  // When `time` is provided (visits/previsit mode):
+  //   left  = age · gender · duration
+  //   right = appointment time
+  // When `time` is NOT provided (scribes mode, legacy behavior):
+  //   left  = chiefComplaint · age/gender
+  //   right = duration
+  const meta = time
+    ? (age != null && gender ? `${age} · ${gender}` : undefined) ?? ""
+    : [chiefComplaint, age != null && gender ? `${age} · ${gender}` : undefined]
+        .filter(Boolean)
+        .join(" · ");
+
+  const rightContent = time ? time : duration;
 
   return (
     <div
@@ -39,18 +51,18 @@ export function SecondaryNavItem({
       style={{ fontFeatureSettings: "'ss07'" }}
     >
       <div className="flex items-center justify-between gap-[8px]">
-        <span className="text-[15px] font-bold leading-[1.2] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] truncate">
+        <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] truncate">
           {name}
         </span>
-        <VisitStatus status={status} />
+        {status && <VisitStatus status={status} />}
       </div>
       <div className="flex items-center justify-between gap-[8px]">
-        <span className="text-[13px] font-normal leading-[1.4] tracking-[0.07px] text-[var(--foreground-secondary,#666)] truncate">
+        <span className="text-[13px] font-normal leading-[1.4] tracking-[0.065px] text-[var(--foreground-secondary,#666)] truncate">
           {meta}
         </span>
-        {duration && (
+        {rightContent && (
           <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-tertiary,#808080)] shrink-0">
-            {duration}
+            {rightContent}
           </span>
         )}
       </div>

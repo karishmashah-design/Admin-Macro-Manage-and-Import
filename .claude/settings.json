@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git pull --ff-only 2>&1 | grep -v 'Already up to date' || true",
+            "statusMessage": "Pulling latest changes..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -q 'packages/ui/src/index\\.ts' && bash \"$(git rev-parse --show-toplevel)/scripts/sync-ds-components.sh\" 2>/dev/null || true",
+            "statusMessage": "Syncing DS component list..."
+          }
+        ]
+      }
+    ]
+  }
+}

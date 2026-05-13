@@ -1,28 +1,12 @@
 import React, { useState } from "react";
 import {
-  PrimaryNav, NavItem,
+  PrimaryNav,
   Tabs,
   SecondaryNavItem,
   Button,
   Icon,
   MagicButton,
-  MagicDocument,
-  MagicEdit,
-  AmbientLogo,
 } from "@ds/ui";
-
-const navItems: NavItem[] = [
-  { id: "visits",    label: "Visits",    icon: <Icon name="stethoscope" size={20} filled /> },
-  { id: "scribes",   label: "Scribes",   icon: <MagicDocument size={20} />, isActive: true },
-  { id: "customize", label: "Customize", icon: <MagicEdit size={20} /> },
-  { id: "assistant", label: "Assistant", icon: <MagicButton size={20} /> },
-  { id: "admin",     label: "Admin",     icon: <Icon name="analytics" size={20} filled /> },
-];
-
-const bottomNavItems: NavItem[] = [
-  { id: "help",     label: "Help",     icon: <Icon name="help" size={20} /> },
-  { id: "settings", label: "Settings", icon: <Icon name="settings" size={20} /> },
-];
 
 const todayPatients = [
   { id: "1", name: "James Vetrovs",   chiefComplaint: "Headache",   age: 72, gender: "M" as const, status: "Generated" as const, duration: "355" },
@@ -55,12 +39,7 @@ export function ScribeLayout({ activeTab, onTabChange, children }: Props) {
   return (
     <div className="flex h-screen overflow-hidden bg-white">
 
-      <PrimaryNav
-        logo={<AmbientLogo size={28} />}
-        items={navItems}
-        bottomItems={bottomNavItems}
-        userInitial="A"
-      />
+      <PrimaryNav activeItem="scribes" />
 
       {/* Secondary nav */}
       <div className="flex flex-col w-[220px] border-r border-[var(--shape-outline,rgba(0,0,0,0.1))] shrink-0 bg-white">
