@@ -43,7 +43,7 @@ When a design or screenshot includes a component not yet in `packages/ui`, searc
 ## Component Library (`packages/ui`)
 
 ### Available components (import from `@ds/ui`)
-`Button`, `IconButton`, `Icon`, `Checkbox`, `Chip`, `Switch`, `TextField`, `TextArea`, `Tabs`, `Badge`, `VisitStatus`, `Link`, `PrimaryNav`, `SecondaryNavItem`, `VersionSwitcher`
+`Button`, `IconButton`, `Icon`, `Checkbox`, `Chip`, `Switch`, `TextField`, `TextArea`, `Tabs`, `Badge`, `VisitStatus`, `Link`, `PrimaryNav`, `SecondaryNavItem`, `Menu`, `MenuItem`, `VersionSwitcher`
 
 ### `Switch` — toggle control
 ```tsx
@@ -97,7 +97,7 @@ Each prototype page that needs a secondary nav has its own layout component (app
 - `previsit-customization`: `src/components/VisitLayout.tsx` — visits secondary nav, daily appointment list with date header + prev/next, "Start Instant Visit" CTA; collapsible sidebar (inline on ≥1024px, overlay on hover for 768–1023px)
 
 ### Available icons (import from `@ds/ui`)
-`AmbientLogo`, `Dictation`, `Learn`, `MagicEdit`, `MagicButton`, `MagicDocument`, `Menu`, `SmartSuggestion`, `Spinner`
+`AmbientLogo`, `Dictation`, `Learn`, `MagicEdit`, `MagicButton`, `MagicDocument`, `MenuIcon`, `SmartSuggestion`, `Spinner`
 
 ### Material icons
 Use the `<Icon name="..." size={N} filled? />` component for any Material Symbols Rounded icon.

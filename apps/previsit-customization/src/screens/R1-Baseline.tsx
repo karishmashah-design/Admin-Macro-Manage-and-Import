@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Icon, IconButton, Button, Checkbox, Tabs } from "@ds/ui";
+import { Icon, IconButton, Button, Checkbox, Tabs, Menu, MenuItem } from "@ds/ui";
 import { VisitLayout } from "../components/VisitLayout";
 
 // ─── Section components ───────────────────────────────────────────────────────
@@ -125,14 +125,14 @@ export default function R1Baseline() {
                   onClick={() => setMenuOpen((v) => !v)}
                 />
                 {menuOpen && (
-                  <div className="absolute right-0 top-[32px] z-[200] w-[220px] bg-white rounded-[12px] shadow-[0_4px_16px_2px_rgba(0,0,0,0.07)] border border-[rgba(0,0,0,0.1)] p-[6px]">
-                    <button
-                      className="flex items-center gap-[12px] w-full px-[12px] h-[48px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] transition-colors text-left"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <Icon name="print" size={20} className="text-[var(--accent,#1132ee)] shrink-0" />
-                      <span className="text-[15px] font-bold text-[var(--foreground-primary,#1a1a1a)]" style={{ fontFamily: "Lato, sans-serif" }}>Print Previsit</span>
-                    </button>
+                  <div className="absolute right-0 top-[32px] z-[200]">
+                    <Menu className="w-[220px]">
+                      <MenuItem
+                        icon={<Icon name="print" size={20} />}
+                        label="Print Previsit"
+                        onClick={() => setMenuOpen(false)}
+                      />
+                    </Menu>
                   </div>
                 )}
               </div>

@@ -21,6 +21,8 @@ export { Link } from "./components/Link";
 export type { LinkProps } from "./components/Link";
 export { SecondaryNavItem } from "./components/SecondaryNavItem";
 export type { SecondaryNavItemProps } from "./components/SecondaryNavItem";
+export { Menu, MenuItem } from "./components/Menu";
+export type { MenuProps, MenuItemProps } from "./components/Menu";
 
 export { VersionSwitcher } from "./proto/VersionSwitcher";
 export type { ScreenDef } from "./proto/VersionSwitcher";
@@ -31,6 +33,6 @@ export { Learn } from "./icons/Learn";
 export { MagicEdit } from "./icons/MagicEdit";
 export { MagicButton } from "./icons/MagicButton";
 export { MagicDocument } from "./icons/MagicDocument";
-export { Menu } from "./icons/Menu";
+export { Menu as MenuIcon } from "./icons/Menu";
 export { SmartSuggestion } from "./icons/SmartSuggestion";
 export { Spinner } from "./icons/Spinner";

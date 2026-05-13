@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import {
   Button, IconButton, Icon, Checkbox, Chip, Switch, TextField, TextArea,
-  Tabs, Badge, VisitStatus, Link, AmbientLogo, Spinner,
+  Tabs, Badge, VisitStatus, Link, AmbientLogo, Spinner, Menu, MenuItem,
+  PrimaryNav, SecondaryNavItem,
+  Dictation, Learn, MagicEdit, MagicButton, MagicDocument, MenuIcon, SmartSuggestion,
 } from "@ds/ui";
 import type { Tab } from "@ds/ui";
 
@@ -10,12 +12,13 @@ const tabs: Tab[] = [
   { id: "form", label: "Form" },
   { id: "chips", label: "Chips & Badges" },
   { id: "icons", label: "Icons" },
+  { id: "menu", label: "Menu" },
+  { id: "nav", label: "Navigation" },
 ];
-
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="mb-10">
-    <h2 className="text-[11px] font-bold tracking-[0.22px] text-[var(--foreground-secondary,#666)] uppercase mb-4">{title}</h2>
+    <h2 className="text-[11px] font-bold tracking-[0.22px] text-[var(--foreground-secondary,#666)] mb-4">{title}</h2>
     <div className="flex flex-wrap gap-3 items-center">{children}</div>
   </div>
 );
@@ -142,6 +145,17 @@ function ChipsBadgesTab() {
 }
 
 function IconsTab() {
+  const customIcons = [
+    { label: "AmbientLogo", node: <AmbientLogo /> },
+    { label: "Spinner", node: <Spinner /> },
+    { label: "Dictation", node: <Dictation /> },
+    { label: "Learn", node: <Learn /> },
+    { label: "MagicEdit", node: <MagicEdit size={24} /> },
+    { label: "MagicButton", node: <MagicButton size={24} /> },
+    { label: "MagicDocument", node: <MagicDocument size={24} /> },
+    { label: "MenuIcon", node: <MenuIcon size={24} /> },
+    { label: "SmartSuggestion", node: <SmartSuggestion size={24} /> },
+  ];
   const materialIcons = [
     "home", "search", "settings", "person", "add", "close", "arrow_back",
     "arrow_forward", "check", "edit", "delete", "refresh", "more_horiz",
@@ -150,15 +164,13 @@ function IconsTab() {
   return (
     <div>
       <Section title="Custom Icons">
-        <div className="flex gap-6 items-center">
-          <div className="flex flex-col items-center gap-1">
-            <AmbientLogo />
-            <span className="text-[10px] text-[var(--foreground-secondary,#666)]">AmbientLogo</span>
-          </div>
-          <div className="flex flex-col items-center gap-1">
-            <Spinner />
-            <span className="text-[10px] text-[var(--foreground-secondary,#666)]">Spinner</span>
-          </div>
+        <div className="flex flex-wrap gap-6 items-end">
+          {customIcons.map(({ label, node }) => (
+            <div key={label} className="flex flex-col items-center gap-1">
+              {node}
+              <span className="text-[10px] text-[var(--foreground-secondary,#666)]">{label}</span>
+            </div>
+          ))}
         </div>
       </Section>
       <Section title="Icon — Sizes">
@@ -191,10 +203,111 @@ function IconsTab() {
   );
 }
 
+function MenuTab() {
+  return (
+    <div>
+      <Section title="Menu — Default variant">
+        <Menu className="w-[220px]">
+          <MenuItem icon={<Icon name="print" size={16} />} label="Print" />
+          <MenuItem icon={<Icon name="download" size={16} />} label="Download" />
+          <MenuItem icon={<Icon name="share" size={16} />} label="Share" disabled />
+        </Menu>
+      </Section>
+      <Section title="Menu Item — States">
+        <Menu className="w-[220px]">
+          <MenuItem icon={<Icon name="print" size={16} />} label="Default" />
+          <MenuItem icon={<Icon name="download" size={16} />} label="Selected" selected />
+          <MenuItem icon={<Icon name="share" size={16} />} label="Disabled" disabled />
+        </Menu>
+      </Section>
+    </div>
+  );
+}
+
+function NavigationTab() {
+  return (
+    <div>
+      <Section title="Primary Nav + Secondary Nav — Visits mode">
+        <div className="flex h-[800px] border border-[var(--surface-3,#eee)] rounded-[8px] overflow-hidden">
+          <PrimaryNav activeItem="visits" />
+          <div className="w-[220px] flex flex-col border-r border-[rgba(0,0,0,0.1)] bg-white">
+            <div className="flex items-center h-[48px] shrink-0 px-[8px] gap-[4px]">
+              <span className="flex-1 text-[15px] font-bold tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] px-[8px]" style={{ fontFamily: "Lato, sans-serif" }}>
+                May 13, Today
+              </span>
+              <IconButton icon={<Icon name="keyboard_arrow_left" size={16} />} variant="tertiary-neutral" size="small" aria-label="Previous" />
+              <IconButton icon={<Icon name="keyboard_arrow_right" size={16} />} variant="tertiary-neutral" size="small" aria-label="Next" />
+            </div>
+            <div className="flex gap-[4px] items-center px-[4px] pb-[4px] shrink-0">
+              <Button variant="tertiary" size="small" prefix={<Icon name="search" size={16} />}>Search</Button>
+              <Button variant="tertiary" size="small" prefix={<Icon name="filter_list" size={16} />}>Filter</Button>
+            </div>
+            <div className="flex-1">
+              <SecondaryNavItem name="Jane Doe" age={38} gender="F" duration="12 min" time="9:00 am" status="Generated" isSelected />
+              <SecondaryNavItem name="Linda Williams" age={53} gender="F" duration="20 min" time="9:30 am" status="In Queue" />
+              <SecondaryNavItem name="David Jones" age={67} gender="M" duration="15 min" time="10:00 am" status="Processing" />
+              <SecondaryNavItem name="Robert Mackenzie" age={74} gender="M" duration="30 min" time="10:30 am" status="Generated" />
+              <SecondaryNavItem name="Richard Roe" age={24} gender="M" duration="10 min" time="11:00 am" />
+            </div>
+            <div className="shrink-0 p-[12px]">
+              <Button variant="primary" size="medium" prefix={<Icon name="mic" size={16} filled />} className="w-full">
+                Start Instant Visit
+              </Button>
+            </div>
+          </div>
+          <div className="flex-1 bg-[var(--surface-2,#fafafa)]" />
+        </div>
+      </Section>
+      <Section title="Primary Nav + Secondary Nav — Scribes mode">
+        <div className="flex h-[800px] border border-[var(--surface-3,#eee)] rounded-[8px] overflow-hidden">
+          <PrimaryNav activeItem="scribes" />
+          <div className="w-[220px] flex flex-col border-r border-[rgba(0,0,0,0.1)] bg-white">
+            <div className="flex items-center h-[48px] shrink-0 px-[8px] py-[12px]">
+              <div className="flex items-center h-[28px] px-[4px] rounded-[6px]">
+                <span className="text-[17px] font-bold tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]" style={{ fontFamily: "Lato, sans-serif" }}>
+                  My Scribes
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-[4px] items-center px-[4px] pb-[4px] shrink-0">
+              <Button variant="tertiary" size="small" prefix={<Icon name="search" size={16} />}>Search</Button>
+              <Button variant="tertiary" size="small" prefix={<Icon name="filter_list" size={16} />}>Filter</Button>
+            </div>
+            <div className="flex-1">
+              <div className="px-[12px] py-[8px]">
+                <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)]" style={{ fontFeatureSettings: "'ss07' 1" }}>
+                  Tue, May 13th (Today)
+                </span>
+              </div>
+              <SecondaryNavItem name="Jane Doe" chiefComplaint="Chest pain" age={38} gender="F" duration="12 min" isSelected />
+              <SecondaryNavItem name="Linda Williams" chiefComplaint="Follow-up" age={53} gender="F" duration="20 min" />
+              <SecondaryNavItem name="David Jones" chiefComplaint="Hypertension check" age={67} gender="M" duration="15 min" />
+              <div className="px-[12px] py-[8px]">
+                <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)]" style={{ fontFeatureSettings: "'ss07' 1" }}>
+                  Mon, May 12th
+                </span>
+              </div>
+              <SecondaryNavItem name="Robert Mackenzie" chiefComplaint="Medication review" age={74} gender="M" duration="30 min" />
+              <SecondaryNavItem name="Richard Roe" chiefComplaint="Back pain" age={24} gender="M" duration="10 min" />
+            </div>
+            <div className="shrink-0 p-[12px]">
+              <Button variant="primary" size="medium" prefix={<Icon name="mic" size={16} filled />} className="w-full">
+                Record New Scribe
+              </Button>
+            </div>
+          </div>
+          <div className="flex-1 bg-[var(--surface-2,#fafafa)]" />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("buttons");
   const tabComponents: Record<string, React.ComponentType> = {
     buttons: ButtonsTab, form: FormTab, chips: ChipsBadgesTab, icons: IconsTab,
+    menu: MenuTab, nav: NavigationTab,
   };
   const ActiveComponent = tabComponents[activeTab];
 
