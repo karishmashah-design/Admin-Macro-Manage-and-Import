@@ -66,7 +66,7 @@ export function VersionSwitcher({ screens }: Props) {
       >
         {/* Rounds */}
         <div className="flex items-center gap-[4px]">
-          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] uppercase mr-[4px] shrink-0">Round</span>
+          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] mr-[4px] shrink-0">Design Round</span>
           {rounds.map((round) => (
             <button
               key={round}
@@ -85,7 +85,7 @@ export function VersionSwitcher({ screens }: Props) {
 
         {/* Directions */}
         <div className="flex items-center gap-[4px]">
-          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] uppercase mr-[4px] shrink-0">Dir</span>
+          <span className="text-[11px] font-bold text-[#999] tracking-[0.5px] mr-[4px] shrink-0">Direction</span>
           {directionsForRound.map((s) => (
             <button
               key={s.direction}

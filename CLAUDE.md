@@ -1,5 +1,17 @@
 # Ambient Prototypes — Claude Instructions
 
+## Session Start Behavior
+
+When a new session starts, confirm the repo is set up (pull latest, check dependencies), then immediately ask:
+
+> "What do you want to build? Give me a name for the prototype and share a description or Figma link. If you're sharing Figma, link to a single screen or a specific component — not a whole flow or a full component set, as too much context at once makes it hard to build accurately. Start focused and we can add more from there."
+
+After the first screen is built, include a short note at the end of your response:
+
+> "Whenever you're happy with this direction or want to explore a different approach, just say 'I want to create a new direction' and I'll branch off without touching what we've built."
+
+Don't repeat this every message — just once after the initial screen is ready. Always guide the user to the next step rather than waiting for them to ask.
+
 ## Repo Structure
 
 ```
