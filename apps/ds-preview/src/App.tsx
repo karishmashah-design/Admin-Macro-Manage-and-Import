@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   Button, IconButton, Icon, Checkbox, Chip, Switch, TextField, TextArea,
-  Tabs, Badge, VisitStatus, Link, AmbientLogo, Spinner, Menu, MenuItem,
+  Tabs, Badge, VisitStatus, Link, AmbientLogo, Spinner, Menu, MenuItem, MenuHeader, MenuSearch,
   PrimaryNav, SecondaryNavItem,
   Dictation, Learn, MagicEdit, MagicButton, MagicDocument, MenuIcon, SmartSuggestion,
 } from "@ds/ui";
@@ -105,16 +105,19 @@ function FormTab() {
 function ChipsBadgesTab() {
   return (
     <div>
-      <Section title="Chip — Colors">
-        <Chip label="Neutral" color="neutral" />
-        <Chip label="Accent" color="accent" />
-      </Section>
-      <Section title="Chip — Interactive">
-        <Chip label="Clickable" color="neutral" onClick={() => {}} />
-        <Chip label="Clickable accent" color="accent" onClick={() => {}} />
+      <Section title="Chip — S">
+        <Chip label="Neutral" color="neutral" onClick={() => {}} />
+        <Chip label="Accent" color="accent" onClick={() => {}} />
         <Chip label="Dismissible" color="neutral" onDismiss={() => {}} />
         <Chip label="Dismissible accent" color="accent" onDismiss={() => {}} />
         <Chip label="Disabled" color="neutral" disabled />
+      </Section>
+      <Section title="Chip — XS">
+        <Chip label="Neutral" color="neutral" size="XS" onClick={() => {}} />
+        <Chip label="Accent" color="accent" size="XS" onClick={() => {}} />
+        <Chip label="Dismissible" color="neutral" size="XS" onDismiss={() => {}} />
+        <Chip label="Dismissible accent" color="accent" size="XS" onDismiss={() => {}} />
+        <Chip label="Disabled" color="neutral" size="XS" disabled />
       </Section>
       <Section title="Badge — Variants">
         <Badge label="Default" variant="default" />
@@ -203,22 +206,107 @@ function IconsTab() {
   );
 }
 
+const VariantRow = ({ name, children }: { name: string; children: React.ReactNode }) => (
+  <div className="flex items-center gap-[32px] w-full py-[2px]">
+    <span className="w-[160px] shrink-0 text-[11px] text-[var(--foreground-secondary,#666)]" style={{ fontFamily: "Lato, sans-serif" }}>{name}</span>
+    <div className="w-[280px]">{children}</div>
+  </div>
+);
+
 function MenuTab() {
+  const [query, setQuery] = React.useState("");
   return (
     <div>
-      <Section title="Menu — Default variant">
+      <Section title="Menu — Default">
         <Menu className="w-[220px]">
           <MenuItem icon={<Icon name="print" size={16} />} label="Print" />
           <MenuItem icon={<Icon name="download" size={16} />} label="Download" />
           <MenuItem icon={<Icon name="share" size={16} />} label="Share" disabled />
         </Menu>
       </Section>
-      <Section title="Menu Item — States">
+      <Section title="Menu — With header">
         <Menu className="w-[220px]">
-          <MenuItem icon={<Icon name="print" size={16} />} label="Default" />
-          <MenuItem icon={<Icon name="download" size={16} />} label="Selected" selected />
-          <MenuItem icon={<Icon name="share" size={16} />} label="Disabled" disabled />
+          <MenuHeader>Actions</MenuHeader>
+          <MenuItem icon={<Icon name="print" size={16} />} label="Print" />
+          <MenuItem icon={<Icon name="download" size={16} />} label="Download" />
         </Menu>
+      </Section>
+      <Section title="Menu — With grouped headers">
+        <Menu className="w-[220px]">
+          <MenuHeader>Suggested</MenuHeader>
+          <MenuItem label="ECG 12-lead" />
+          <MenuItem label="D-Dimer" />
+          <MenuHeader>All Orders</MenuHeader>
+          <MenuItem label="Chest X-ray, PA & Lateral" />
+          <MenuItem label="Stress Test" />
+          <MenuItem label="Echocardiogram" />
+        </Menu>
+      </Section>
+      <Section title="Menu — With search">
+        <Menu className="w-[280px]">
+          <MenuSearch value={query} onChange={setQuery} placeholder="Search orders…" />
+          <MenuHeader>Suggested</MenuHeader>
+          <MenuItem label="ECG 12-lead" />
+          <MenuItem label="D-Dimer" />
+          <MenuHeader>All Orders</MenuHeader>
+          <MenuItem label="Chest X-ray, PA & Lateral" />
+          <MenuItem label="Stress Test" />
+        </Menu>
+      </Section>
+      <Section title="MenuItem">
+        <VariantRow name="Label only">
+          <MenuItem label="Clinical Note" />
+        </VariantRow>
+        <VariantRow name="Icon + label">
+          <MenuItem icon={<Icon name="download" size={16} />} label="Download" />
+        </VariantRow>
+        <VariantRow name="Label + description">
+          <MenuItem label="Quest Diagnostics" description="Lab · Standard turnaround" />
+        </VariantRow>
+        <VariantRow name="Trailing label">
+          <MenuItem
+            label="Follow-up visit"
+            trailing={
+              <span className="text-[13px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)]" style={{ fontFamily: "Lato, sans-serif" }}>
+                05/13/2026
+              </span>
+            }
+          />
+        </VariantRow>
+        <VariantRow name="Label + action">
+          <MenuItem
+            label="Diagnosis"
+            trailing={
+              <Button variant="tertiary" size="small" prefix={<Icon name="add" size={14} />}>Add</Button>
+            }
+          />
+        </VariantRow>
+        <VariantRow name="Visit item">
+          <button
+            className="flex items-stretch w-full gap-[8px] px-[8px] py-[6px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] transition-colors text-left"
+            style={{ fontFamily: "Lato, sans-serif" }}
+          >
+            <span className="flex flex-col gap-[2px] flex-1 min-w-0">
+              <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] truncate">
+                Jane Doe
+              </span>
+              <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] truncate">
+                Chest pain · 38 · F
+              </span>
+            </span>
+            <span className="shrink-0 flex items-end">
+              <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)]">
+                9:00 am
+              </span>
+            </span>
+          </button>
+        </VariantRow>
+        <VariantRow name="State: selected">
+          <MenuItem label="Clinical Note" selected />
+        </VariantRow>
+        <VariantRow name="State: disabled">
+          <MenuItem label="Clinical Note" disabled />
+        </VariantRow>
       </Section>
     </div>
   );
@@ -304,7 +392,12 @@ function NavigationTab() {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState("buttons");
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "buttons");
+
+  function handleTabChange(tab: string) {
+    window.history.replaceState({}, "", `?tab=${tab}`);
+    setActiveTab(tab);
+  }
   const tabComponents: Record<string, React.ComponentType> = {
     buttons: ButtonsTab, form: FormTab, chips: ChipsBadgesTab, icons: IconsTab,
     menu: MenuTab, nav: NavigationTab,
@@ -320,7 +413,7 @@ export default function App() {
         </h1>
       </div>
       <div className="px-8 pt-4 border-b border-[var(--surface-3,#eee)]">
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
       <div className="px-8 py-8 max-w-4xl">
         <ActiveComponent />

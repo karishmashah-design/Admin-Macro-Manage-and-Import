@@ -55,23 +55,25 @@ const cptCodes = [
 ];
 
 const initialOrders = [
-  { id: "1", label: "ECG 12-lead",      detail: "In-house",  icd: "R07.9", checked: true  },
-  { id: "2", label: "Chest X-ray, 2-view", detail: "In-house", icd: "R07.9", checked: false },
+  { id: "ecg-inhouse",  label: "ECG 12-lead", detail: "In-house", icd: "R07.9", checked: true  },
+  { id: "ddimer-quest", label: "D-Dimer",     detail: "Quest",    icd: "R07.9", checked: true  },
 ];
 
-type OrderSetChild = { id: string; label: string; detail: string; checked: boolean };
-type OrderSetItem  = { id: string; label: string; icd: string; children: OrderSetChild[] };
+type OrderSetChild = { id: string; label: string; type: "lab" | "imaging"; detail: string; checked: boolean };
+type OrderSetItem  = { id: string; label: string; icd: string; labDetail?: string; imagingDetail?: string; children: OrderSetChild[] };
 
 const initialOrderSets: OrderSetItem[] = [
   {
     id: "set-1",
     label: "Chest Pain Workup",
     icd: "R07.9",
+    labDetail: "Quest",
+    imagingDetail: "RadNet",
     children: [
-      { id: "s1", label: "Troponin I, High-Sensitivity", detail: "Quest", checked: true },
-      { id: "s2", label: "Basic Metabolic Panel",        detail: "Quest", checked: true },
-      { id: "s3", label: "CBC with Differential",        detail: "Quest", checked: true },
-      { id: "s4", label: "Lipid Panel",                  detail: "Quest", checked: true },
+      { id: "s1", label: "Troponin I, High-Sensitivity", type: "lab",     detail: "Quest",  checked: true },
+      { id: "s2", label: "Basic Metabolic Panel",        type: "lab",     detail: "Quest",  checked: true },
+      { id: "s3", label: "CBC with Differential",        type: "lab",     detail: "Quest",  checked: true },
+      { id: "s4", label: "Chest X-ray, PA & Lateral",   type: "imaging", detail: "RadNet", checked: true },
     ],
   },
 ];
@@ -324,6 +326,10 @@ export default function R1Baseline() {
                     <div className="flex items-center gap-[8px]">
                       <Checkbox state={checkboxState} onChange={() => toggleSet(set.id)} />
                       <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{set.label}</span>
+                      {set.labDetail && <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>}
+                      {set.labDetail && <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] shrink-0">{set.labDetail}</span>}
+                      {set.imagingDetail && <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>}
+                      {set.imagingDetail && <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] shrink-0">{set.imagingDetail}</span>}
                       <span className="text-[12px] font-bold text-[var(--foreground-brand,#1132ee)] leading-[1.2] shrink-0" style={{ fontFeatureSettings: "'ss07'" }}>{set.icd}</span>
                     </div>
                     {/* Children */}
@@ -331,7 +337,7 @@ export default function R1Baseline() {
                       {set.children.map(child => (
                         <div key={child.id} className="flex items-center gap-[8px]">
                           <Checkbox state={child.checked ? "selected" : "unselected"} onChange={() => toggleSetChild(set.id, child.id)} />
-                          <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{child.label}</span>
+                          <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{child.label}</span>
                           <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>
                           <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] shrink-0">{child.detail}</span>
                         </div>

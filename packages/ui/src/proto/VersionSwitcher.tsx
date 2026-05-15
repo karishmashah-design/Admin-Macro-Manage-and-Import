@@ -8,11 +8,14 @@ export type ScreenDef = {
 
 type Props = {
   screens: ScreenDef[];
+  /** Default to this round on first load. Defaults to the last round. */
+  initialRound?: string;
 };
 
-export function VersionSwitcher({ screens }: Props) {
+export function VersionSwitcher({ screens, initialRound }: Props) {
   const rounds = [...new Set(screens.map((s) => s.round))];
-  const [activeRound, setActiveRound] = useState(rounds[0]);
+  const defaultRound = initialRound ?? rounds[rounds.length - 1];
+  const [activeRound, setActiveRound] = useState(defaultRound);
 
   const directionsForRound = screens.filter((s) => s.round === activeRound);
   const [activeDirection, setActiveDirection] = useState(directionsForRound[0]?.direction);

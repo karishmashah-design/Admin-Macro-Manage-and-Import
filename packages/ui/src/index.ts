@@ -16,13 +16,13 @@ export type { TextAreaProps } from "./components/TextArea";
 export { Switch } from "./components/Switch";
 export type { SwitchProps, SwitchSize } from "./components/Switch";
 export { Chip } from "./components/Chip";
-export type { ChipProps, ChipVariant } from "./components/Chip";
+export type { ChipProps, ChipColor, ChipSize } from "./components/Chip";
 export { Link } from "./components/Link";
 export type { LinkProps } from "./components/Link";
 export { SecondaryNavItem } from "./components/SecondaryNavItem";
 export type { SecondaryNavItemProps } from "./components/SecondaryNavItem";
-export { Menu, MenuItem } from "./components/Menu";
-export type { MenuProps, MenuItemProps } from "./components/Menu";
+export { Menu, MenuItem, MenuHeader, MenuSearch } from "./components/Menu";
+export type { MenuProps, MenuItemProps, MenuHeaderProps, MenuSearchProps } from "./components/Menu";
 
 export { VersionSwitcher } from "./proto/VersionSwitcher";
 export type { ScreenDef } from "./proto/VersionSwitcher";

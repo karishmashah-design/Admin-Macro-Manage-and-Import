@@ -158,10 +158,10 @@ function OrderCard({ order, meta, onMetaChange, onToggle, onTitleClick, onCompan
           </span>
         </button>
         {order.company && (
-          <Chip label={order.company} color="neutral" onClick={onCompanyClick} />
+          <Chip label={order.company} color="neutral" size="XS" onClick={onCompanyClick} />
         )}
         {order.relatedIcd ? (
-          <Chip label={order.relatedIcd} color="accent" onClick={onIcdClick} />
+          <Chip label={order.relatedIcd} color="accent" size="XS" onClick={onIcdClick} />
         ) : (
           <button
             onClick={onIcdClick}
@@ -171,7 +171,7 @@ function OrderCard({ order, meta, onMetaChange, onToggle, onTitleClick, onCompan
           </button>
         )}
         <div className="ml-auto">
-          <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+          <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
             onClick={onRemove} aria-label="Remove" />
         </div>
       </div>
@@ -240,10 +240,10 @@ function SetCard({
             {set.baseLabel ?? set.label}
           </span>
         </button>
-        <Chip label={companyLabel} color="neutral" onClick={onCompanyClick} />
-        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" />}
+        <Chip label={companyLabel} color="neutral" size="XS" onClick={onCompanyClick} />
+        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" size="XS" />}
         <div className="ml-auto">
-          <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+          <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
             onClick={onRemove} aria-label="Remove" />
         </div>
       </div>
@@ -274,7 +274,7 @@ function SetCard({
                 <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                   {child.label}
                 </span>
-                <Chip label={child.company} color="neutral" onClick={(e) => onChildCompanyClick(e, child.id)} />
+                <Chip label={child.company} color="neutral" size="XS" onClick={(e) => onChildCompanyClick(e, child.id)} />
               </div>
               {child.checked && (
                 <div className="ml-[29px] flex flex-col gap-[6px]">
@@ -362,8 +362,14 @@ export default function R2Cards() {
 
   function handleIcd10Select(item: CodeItem) {
     if (popover?.code) {
-      setIcd10((prev) => prev.map((c) => (c.code === popover.code ? item : c)));
-      setOrders((prev) => prev.map((o) => o.relatedIcd === popover.code ? { ...o, relatedIcd: item.code } : o));
+      const old = popover.code;
+      setIcd10((prev) => prev.map((c) => (c.code === old ? item : c)));
+      setOrders((prev) => prev.map((o) => o.relatedIcd === old ? { ...o, relatedIcd: item.code } : o));
+      setOrderSets((prev) => prev.map((s) => ({
+        ...s,
+        relatedIcd: s.relatedIcd === old ? item.code : s.relatedIcd,
+        children: s.children.map((c) => ({ ...c, relatedIcd: c.relatedIcd === old ? item.code : c.relatedIcd })),
+      })));
     } else {
       setIcd10((prev) => [...prev, item]);
     }
@@ -416,7 +422,8 @@ export default function R2Cards() {
         id: poolItem.id,
         label: poolItem.baseLabel,
         baseLabel: poolItem.baseLabel,
-        defaultCompany: poolItem.defaultCompany,
+        defaultLabCompany: poolItem.defaultLabCompany,
+        defaultImagingCompany: poolItem.defaultImagingCompany,
         relatedIcd: poolItem.relatedIcd,
         children: poolItem.children.map((c) => {
           const existing = s.children.find((sc) => sc.label === c.label);
@@ -454,7 +461,8 @@ export default function R2Cards() {
     if (!popover?.code) return;
     setOrderSets((prev) => prev.map((s) => s.id !== popover.code ? s : {
       ...s,
-      defaultCompany: company,
+      defaultLabCompany: company,
+      defaultImagingCompany: company,
       children: s.children.map((c) => ({ ...c, company })),
     }));
     setPopover(null);

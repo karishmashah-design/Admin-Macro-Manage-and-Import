@@ -41,8 +41,14 @@ export default function R2EditMode() {
 
   function handleIcd10Select(item: CodeItem) {
     if (popover?.code) {
-      setIcd10((prev) => prev.map((c) => (c.code === popover.code ? item : c)));
-      setOrders((prev) => prev.map((o) => o.relatedIcd === popover.code ? { ...o, relatedIcd: item.code } : o));
+      const old = popover.code;
+      setIcd10((prev) => prev.map((c) => (c.code === old ? item : c)));
+      setOrders((prev) => prev.map((o) => o.relatedIcd === old ? { ...o, relatedIcd: item.code } : o));
+      setOrderSets((prev) => prev.map((s) => ({
+        ...s,
+        relatedIcd: s.relatedIcd === old ? item.code : s.relatedIcd,
+        children: s.children.map((c) => ({ ...c, relatedIcd: c.relatedIcd === old ? item.code : c.relatedIcd })),
+      })));
     } else {
       setIcd10((prev) => [...prev, item]);
     }
@@ -98,7 +104,8 @@ export default function R2EditMode() {
         id: poolItem.id,
         label: poolItem.baseLabel,
         baseLabel: poolItem.baseLabel,
-        defaultCompany: poolItem.defaultCompany,
+        defaultLabCompany: poolItem.defaultLabCompany,
+        defaultImagingCompany: poolItem.defaultImagingCompany,
         relatedIcd: poolItem.relatedIcd,
         children: poolItem.children.map((c) => {
           const existing = s.children.find((sc) => sc.label === c.label);
@@ -143,7 +150,8 @@ export default function R2EditMode() {
     if (!popover?.code) return;
     setOrderSets((prev) => prev.map((s) => s.id !== popover.code ? s : {
       ...s,
-      defaultCompany: company,
+      defaultLabCompany: company,
+      defaultImagingCompany: company,
       children: s.children.map((c) => ({ ...c, company })),
     }));
     setPopover(null);
@@ -369,7 +377,7 @@ export default function R2EditMode() {
                       </button>
                     )}
                     <IconButton
-                      size="small" variant="tertiary"
+                      size="small" variant="tertiary-neutral"
                       icon={<Icon name="close" size={16} />}
                       onClick={() => setOrders((prev) => prev.filter((x) => x.id !== o.id))}
                       aria-label="Remove"
@@ -380,7 +388,7 @@ export default function R2EditMode() {
                     <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                       {o.baseLabel ? `${o.baseLabel} (${o.company})` : o.label}
                     </span>
-                    {o.relatedIcd && <Chip label={o.relatedIcd} color="accent" />}
+                    {o.relatedIcd && <Chip label={o.relatedIcd} color="accent" size="XS" />}
                   </div>
                 )}
               </div>
@@ -388,8 +396,11 @@ export default function R2EditMode() {
 
             {/* Order sets */}
             {orderSets.map((set) => {
-              const allSameCompany = set.children.every((c) => c.company === set.defaultCompany);
-              const companyLabel = allSameCompany ? set.defaultCompany : "Mixed";
+              const labChildren = set.children.filter((c) => c.type === "lab");
+              const imagingChildren = set.children.filter((c) => c.type === "imaging");
+              const labLabel = labChildren.length > 0 ? (labChildren.every((c) => c.company === labChildren[0].company) ? labChildren[0].company : "Mixed labs") : null;
+              const imagingLabel = imagingChildren.length > 0 ? (imagingChildren.every((c) => c.company === imagingChildren[0].company) ? imagingChildren[0].company : "Mixed imaging") : null;
+              const companyLabel = [labLabel, imagingLabel].filter(Boolean).join(" · ") || "Mixed";
 
               return (
                 <div key={set.id} className="flex flex-col gap-[4px]">
@@ -410,10 +421,10 @@ export default function R2EditMode() {
                           onClick={(e) => openPopover(e, "set-company", set.id)}
                         />
                         {set.relatedIcd && (
-                          <Chip label={set.relatedIcd} color="accent" />
+                          <Chip label={set.relatedIcd} color="accent" size="XS" />
                         )}
                         <IconButton
-                          size="small" variant="tertiary"
+                          size="small" variant="tertiary-neutral"
                           icon={<Icon name="close" size={16} />}
                           onClick={() => setOrderSets((prev) => prev.filter((s) => s.id !== set.id))}
                           aria-label="Remove"
@@ -424,7 +435,7 @@ export default function R2EditMode() {
                         <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap px-[8px]">
                           {set.label} ({companyLabel})
                         </span>
-                        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" />}
+                        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" size="XS" />}
                       </>
                     )}
                   </div>

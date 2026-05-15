@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Button, IconButton, Icon, Checkbox, Chip } from "@ds/ui";
+import { Button, IconButton, Icon, Checkbox, Chip, Menu, MenuItem, MenuHeader, MenuSearch } from "@ds/ui";
 import { ScribeLayout } from "../components/ScribeLayout";
-import { CodeSearch, OrderSearch, SetOrOrderSearch } from "../components/CodeSearch";
+import type { CodeItem as CodeItemType } from "../data/mockCodes";
+
+function CodeMenuItem({ item, onSelect }: { item: CodeItemType; onSelect: (item: CodeItemType) => void }) {
+  return (
+    <button
+      onMouseDown={(e) => { e.preventDefault(); onSelect(item); }}
+      className="flex items-center w-full gap-[8px] h-[36px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] transition-colors text-left"
+    >
+      <span className="shrink-0 w-[64px] text-[13px] font-bold leading-none tracking-[0.13px] text-[var(--accent,#1132ee)]" style={{ fontFamily: "Lato, sans-serif", fontFeatureSettings: "'ss07'" }}>
+        {item.code}
+      </span>
+      <span className="text-[13px] font-normal leading-none text-[var(--foreground-primary,#1a1a1a)] flex-1 min-w-0 truncate" style={{ fontFamily: "Lato, sans-serif" }}>
+        {item.description}
+      </span>
+    </button>
+  );
+}
 import {
   icd10Pool, cptPool, ordersPool, ordersAdjacent,
   orderSetsPool, orderSetsAdjacent,
@@ -17,19 +33,25 @@ type PopoverTarget = {
   setId?: string;
 };
 
-export default function R2Inline() {
+export default function R2CoChip() {
   const [activeTab, setActiveTab] = useState("diagnostics");
   const [icd10, setIcd10] = useState<CodeItem[]>(initialIcd10);
   const [cpt, setCpt] = useState<CodeItem[]>(initialCpt);
   const [orders, setOrders] = useState<OrderItem[]>(initialOrders);
   const [orderSets, setOrderSets] = useState<OrderSetItem[]>(initialOrderSets);
   const [popover, setPopover] = useState<PopoverTarget | null>(null);
+  const [popoverQuery, setPopoverQuery] = useState("");
 
   useEffect(() => {
     if (!popover) return;
+    setPopoverQuery("");
     const handler = () => setPopover(null);
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    window.addEventListener("scroll", handler, true);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      window.removeEventListener("scroll", handler, true);
+    };
   }, [popover]);
 
   function openPopover(e: React.MouseEvent, list: PopoverTarget["list"], code?: string, setId?: string) {
@@ -231,8 +253,6 @@ export default function R2Inline() {
     return ordersPool.filter((x) => x.baseLabel === child.label && x.company !== child.company);
   })();
 
-  // For "order" popover (title click): exclude same-baseLabel items so we show
-  // different orders, not the same order at a different vendor.
   const orderTitleSameBaseIds: Set<string> = (() => {
     if (popover?.list !== "order" || !popover.code) return new Set();
     const cur = orders.find((o) => o.id === popover.code);
@@ -306,7 +326,7 @@ export default function R2Inline() {
                   </span>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                  <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                     onClick={(e) => { e.stopPropagation(); setIcd10((prev) => prev.filter((x) => x.code !== c.code)); }} aria-label="Remove" />
                 </div>
               </div>
@@ -335,7 +355,7 @@ export default function R2Inline() {
                   </span>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                  <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                     onClick={(e) => { e.stopPropagation(); setCpt((prev) => prev.filter((x) => x.code !== c.code)); }} aria-label="Remove" />
                 </div>
               </div>
@@ -354,6 +374,10 @@ export default function R2Inline() {
             {/* Individual orders */}
             {orders.map((o) => (
               <div key={o.id} className="group flex items-center gap-[4px] min-h-[28px]">
+                <Checkbox
+                  state={o.checked ? "selected" : "unselected"}
+                  onChange={() => toggleOrder(o.id)}
+                />
                 <button
                   onClick={(e) => openPopover(e, "order", o.id)}
                   className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
@@ -392,11 +416,18 @@ export default function R2Inline() {
               const imagingChipLabel = imagingChildren.length > 0
                 ? (imagingChildren.every((c) => c.company === imagingChildren[0].company) ? imagingChildren[0].company : "Mixed imaging")
                 : null;
+              const allChecked = set.children.every((c) => c.checked);
+              const someChecked = set.children.some((c) => c.checked);
+              const checkboxState = allChecked ? "selected" : someChecked ? "indeterminate" : "unselected";
 
               return (
                 <div key={set.id} className="flex flex-col gap-[4px]">
                   {/* Set header */}
                   <div className="group flex items-center gap-[4px] min-h-[28px]">
+                    <Checkbox
+                      state={checkboxState}
+                      onChange={() => toggleSet(set.id)}
+                    />
                     <button
                       onClick={(e) => openPopover(e, "set-title", set.id)}
                       className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
@@ -420,12 +451,11 @@ export default function R2Inline() {
                     </div>
                   </div>
 
-                  {/* Children */}
-                  <div className="flex flex-col gap-[4px]">
+                  {/* Children with vertical line */}
+                  <div className="ml-[12px] pl-[12px] border-l-2 border-[#ebebeb] flex flex-col gap-[4px]">
                     {set.children.map((child) => (
-                      <div key={child.id} className="flex items-center gap-[4px] min-h-[28px]">
+                      <div key={child.id} className="flex items-center gap-[8px] min-h-[28px]">
                         <Checkbox
-                          className="ml-[3px]"
                           state={child.checked ? "selected" : "unselected"}
                           onChange={() => toggleSetChild(set.id, child.id)}
                         />
@@ -457,162 +487,177 @@ export default function R2Inline() {
         <div
           style={popoverStyle}
           onMouseDown={(e) => e.stopPropagation()}
-          className="rounded-[10px] border border-[var(--shape-outline,rgba(0,0,0,0.1))] overflow-hidden shadow-lg bg-white"
+          className=""
         >
-          {popover.list === "set-title" ? (
-            <SetOrOrderSearch
-              setPool={orderSetsPool}
-              orderPool={ordersPool}
-              adjacentSetIds={popover.code ? (orderSetsAdjacent[popover.code] ?? []) : []}
-              currentSetId={popover.code}
-              onSelectSet={handleSetTitleSelect}
-              onSelectOrder={handleSetReplaceWithOrder}
-              onClose={() => setPopover(null)}
-            />
-          ) : popover.list === "order" ? (
-            <OrderSearch
-              pool={ordersPool}
-              adjacent={orderTitleAdjacent}
-              exclude={orderTitleExclude}
-              onSelect={handleOrderSelect}
-              onClose={() => setPopover(null)}
-            />
-          ) : popover.list === "order-icd" ? (
-            <CodeSearch
-              pool={icd10Pool}
-              adjacent={(() => {
-                const cur = orders.find((o) => o.id === popover.code)?.relatedIcd;
-                return cur ? (icd10Adjacent[cur] ?? []).map((code) => icd10Pool.find((x) => x.code === code)!).filter(Boolean) : [];
-              })()}
-              exclude={[]}
-              onSelect={handleOrderIcdSelect}
-              onClose={() => setPopover(null)}
-              placeholder={(() => {
-                const cur = orders.find((o) => o.id === popover.code)?.relatedIcd;
-                return cur ? `Replace ${cur}…` : "Link ICD-10 code…";
-              })()}
-            />
-          ) : popover.list === "order-company" ? (
-            <div className="flex flex-col bg-white">
-              <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
-                <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  Select vendor for {orders.find((o) => o.id === popover.code)?.baseLabel}
-                </span>
-              </div>
-              <div className="py-[4px]">
-                {companyVariants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onMouseDown={(e) => { e.preventDefault(); handleCompanySelect(variant); }}
-                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
-                  >
-                    <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
-                    <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+          {popover.list === "set-title" ? (() => {
+            const q = popoverQuery.toLowerCase();
+            const matchesSet = (s: typeof orderSetsPool[0]) => {
+              const co = [s.defaultLabCompany, s.defaultImagingCompany].filter(Boolean).join(" ").toLowerCase();
+              return s.baseLabel.toLowerCase().includes(q) || co.includes(q);
+            };
+            const matchesOrder = (o: typeof ordersPool[0]) =>
+              (o.baseLabel ?? o.label).toLowerCase().includes(q) || o.detail.toLowerCase().includes(q);
+            const adjIdSet = new Set(popover.code ? (orderSetsAdjacent[popover.code] ?? []) : []);
+            const adjSets = orderSetsPool.filter((s) => s.id !== popover.code && adjIdSet.has(s.id) && (q === "" || matchesSet(s)));
+            const otherSets = orderSetsPool.filter((s) => s.id !== popover.code && !adjIdSet.has(s.id) && (q === "" || matchesSet(s)));
+            const filteredOrders = ordersPool.filter((o) => q === "" || matchesOrder(o));
+            const hasResults = adjSets.length > 0 || otherSets.length > 0 || filteredOrders.length > 0;
+            return (
+              <Menu>
+                <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder="Search order sets & orders…" />
+                <div className="overflow-y-auto max-h-[280px]">
+                  {adjSets.length > 0 && (
+                    <>
+                      <MenuHeader>Suggested</MenuHeader>
+                      {adjSets.map((s) => <MenuItem key={s.id} label={s.baseLabel} onClick={() => handleSetTitleSelect(s)} />)}
+                    </>
+                  )}
+                  {otherSets.length > 0 && (
+                    <>
+                      {(adjSets.length > 0 || filteredOrders.length > 0) && <MenuHeader>Order Sets</MenuHeader>}
+                      {otherSets.map((s) => <MenuItem key={s.id} label={s.baseLabel} onClick={() => handleSetTitleSelect(s)} />)}
+                    </>
+                  )}
+                  {filteredOrders.length > 0 && (
+                    <>
+                      {(adjSets.length > 0 || otherSets.length > 0) && <MenuHeader>Individual Orders</MenuHeader>}
+                      {filteredOrders.map((o) => <MenuItem key={o.id} label={o.baseLabel ?? o.label} onClick={() => handleSetReplaceWithOrder(o)} />)}
+                    </>
+                  )}
+                  {!hasResults && <p className="px-[8px] py-[8px] text-[13px] text-[var(--foreground-tertiary,#808080)]" style={{ fontFamily: "Lato, sans-serif" }}>No results found</p>}
+                </div>
+              </Menu>
+            );
+          })() : popover.list === "order" ? (() => {
+            const q = popoverQuery.toLowerCase();
+            const matches = (o: typeof ordersPool[0]) =>
+              (o.baseLabel ?? o.label).toLowerCase().includes(q) || o.detail.toLowerCase().includes(q);
+            const adjSeenLabels = new Set<string>();
+            const filteredAdj = orderTitleAdjacent.filter((o) => {
+              if (q !== "" && !matches(o)) return false;
+              const key = o.baseLabel ?? o.label;
+              if (adjSeenLabels.has(key)) return false;
+              adjSeenLabels.add(key);
+              return true;
+            });
+            const adjIds = new Set(orderTitleAdjacent.map((o) => o.id));
+            const adjBaseLabels = new Set(filteredAdj.map((o) => o.baseLabel ?? o.label));
+            const seenLabels = new Set<string>();
+            const filteredRest = ordersPool.filter((o) => {
+              if (orderTitleExclude.includes(o.id) || adjIds.has(o.id)) return false;
+              if (q !== "" && !matches(o)) return false;
+              const key = o.baseLabel ?? o.label;
+              if (seenLabels.has(key) || adjBaseLabels.has(key)) return false;
+              seenLabels.add(key);
+              return true;
+            });
+            const isEmpty = filteredAdj.length === 0 && filteredRest.length === 0;
+            return (
+              <Menu>
+                <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder="Search orders…" />
+                <div className="overflow-y-auto max-h-[220px]">
+                  {filteredAdj.length > 0 && (
+                    <>
+                      <MenuHeader>Suggested</MenuHeader>
+                      {filteredAdj.map((o) => <MenuItem key={o.id} label={o.baseLabel ?? o.label} onClick={() => handleOrderSelect(o)} />)}
+                      {filteredRest.length > 0 && <MenuHeader>All Orders</MenuHeader>}
+                    </>
+                  )}
+                  {filteredRest.map((o) => <MenuItem key={o.id} label={o.baseLabel ?? o.label} onClick={() => handleOrderSelect(o)} />)}
+                  {isEmpty && <p className="px-[8px] py-[8px] text-[13px] text-[var(--foreground-tertiary,#808080)]" style={{ fontFamily: "Lato, sans-serif" }}>No orders found</p>}
+                </div>
+              </Menu>
+            );
+          })() : popover.list === "order-icd" ? (() => {
+            const cur = orders.find((o) => o.id === popover.code)?.relatedIcd;
+            const adj = cur ? (icd10Adjacent[cur] ?? []).map((code) => icd10Pool.find((x) => x.code === code)!).filter(Boolean) : [];
+            const ph = cur ? `Replace ${cur}…` : "Link ICD-10 code…";
+            const q = popoverQuery.toLowerCase();
+            const mc = (c: CodeItemType) => c.code.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+            const fAdj = adj.filter((c) => q === "" || mc(c));
+            const adjCodes = new Set(adj.map((c) => c.code));
+            const fRest = icd10Pool.filter((c) => !adjCodes.has(c.code) && (q === "" || mc(c)));
+            return (
+              <Menu>
+                <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder={ph} />
+                <div className="overflow-y-auto max-h-[220px]">
+                  {fAdj.length > 0 && (<><MenuHeader>Suggested</MenuHeader>{fAdj.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={handleOrderIcdSelect} />)}{fRest.length > 0 && <MenuHeader>All Codes</MenuHeader>}</>)}
+                  {fRest.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={handleOrderIcdSelect} />)}
+                  {fAdj.length === 0 && fRest.length === 0 && <p className="px-[8px] py-[8px] text-[13px] text-[var(--foreground-tertiary,#808080)]" style={{ fontFamily: "Lato, sans-serif" }}>No codes found</p>}
+                </div>
+              </Menu>
+            );
+          })() : popover.list === "order-company" ? (
+            <Menu>
+              <MenuHeader>Select vendor</MenuHeader>
+              {companyVariants.map((variant) => (
+                <MenuItem key={variant.id} label={variant.company ?? ""} onClick={() => handleCompanySelect(variant)} />
+              ))}
+            </Menu>
           ) : popover.list === "set-lab-company" ? (
-            <div className="flex flex-col bg-white">
-              <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
-                <Icon name="science" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  Select vendor for all labs in {orderSets.find((s) => s.id === popover.code)?.label}
-                </span>
-              </div>
-              <div className="py-[4px]">
-                {setLabCompanyOptions.map((company) => (
-                  <button
-                    key={company}
-                    onMouseDown={(e) => { e.preventDefault(); handleSetLabCompanySelect(company); }}
-                    className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
-                  >
-                    <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2]">{company}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Menu>
+              <MenuHeader>Select vendor</MenuHeader>
+              {setLabCompanyOptions.map((company) => (
+                <MenuItem key={company} label={company} onClick={() => handleSetLabCompanySelect(company)} />
+              ))}
+            </Menu>
           ) : popover.list === "set-imaging-company" ? (
-            <div className="flex flex-col bg-white">
-              <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
-                <Icon name="radiology" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  Select vendor for all imaging in {orderSets.find((s) => s.id === popover.code)?.label}
-                </span>
-              </div>
-              <div className="py-[4px]">
-                {setImagingCompanyOptions.map((company) => (
-                  <button
-                    key={company}
-                    onMouseDown={(e) => { e.preventDefault(); handleSetImagingCompanySelect(company); }}
-                    className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
-                  >
-                    <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2]">{company}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Menu>
+              <MenuHeader>Select vendor</MenuHeader>
+              {setImagingCompanyOptions.map((company) => (
+                <MenuItem key={company} label={company} onClick={() => handleSetImagingCompanySelect(company)} />
+              ))}
+            </Menu>
           ) : popover.list === "set-child-company" ? (
-            <div className="flex flex-col bg-white">
-              <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
-                <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  {(() => {
-                    const set = orderSets.find((s) => s.id === popover.setId);
-                    const child = set?.children.find((c) => c.id === popover.code);
-                    return `Select vendor for ${child?.label}`;
-                  })()}
-                </span>
-              </div>
-              <div className="py-[4px]">
-                {setChildCompanyVariants.map((variant) => (
-                  <button
-                    key={variant.id}
-                    onMouseDown={(e) => { e.preventDefault(); handleSetChildCompanySelect(variant); }}
-                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
-                  >
-                    <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
-                    <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : popover.list === "set-child-icd" ? (
-            <CodeSearch
-              pool={icd10Pool}
-              adjacent={(() => {
-                const set = orderSets.find((s) => s.id === popover.setId);
-                const cur = set?.children.find((c) => c.id === popover.code)?.relatedIcd;
-                return cur ? (icd10Adjacent[cur] ?? []).map((code) => icd10Pool.find((x) => x.code === code)!).filter(Boolean) : [];
-              })()}
-              exclude={[]}
-              onSelect={handleSetChildIcdSelect}
-              onClose={() => setPopover(null)}
-              placeholder={(() => {
-                const set = orderSets.find((s) => s.id === popover.setId);
-                const cur = set?.children.find((c) => c.id === popover.code)?.relatedIcd;
-                return cur ? `Replace ${cur}…` : "Link ICD-10 code…";
-              })()}
-            />
-          ) : (
-            <CodeSearch
-              pool={popover.list === "icd10" ? icd10Pool : cptPool}
-              adjacent={adjacent}
-              exclude={popover.list === "icd10"
-                ? icd10.map((c) => c.code).filter((c) => c !== popover.code)
-                : cpt.map((c) => c.code).filter((c) => c !== popover.code)}
-              onSelect={popover.list === "icd10" ? handleIcd10Select : handleCptSelect}
-              onClose={() => setPopover(null)}
-              placeholder={popover.code
-                ? `Replace ${popover.code}…`
-                : popover.list === "icd10" ? "Search ICD-10 codes…" : "Search CPT codes…"}
-            />
-          )}
+            <Menu>
+              <MenuHeader>Select vendor</MenuHeader>
+              {setChildCompanyVariants.map((variant) => (
+                <MenuItem key={variant.id} label={variant.company ?? ""} onClick={() => handleSetChildCompanySelect(variant)} />
+              ))}
+            </Menu>
+          ) : popover.list === "set-child-icd" ? (() => {
+            const set = orderSets.find((s) => s.id === popover.setId);
+            const cur = set?.children.find((c) => c.id === popover.code)?.relatedIcd;
+            const adj = cur ? (icd10Adjacent[cur] ?? []).map((code) => icd10Pool.find((x) => x.code === code)!).filter(Boolean) : [];
+            const ph = cur ? `Replace ${cur}…` : "Link ICD-10 code…";
+            const q = popoverQuery.toLowerCase();
+            const mc = (c: CodeItemType) => c.code.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+            const fAdj = adj.filter((c) => q === "" || mc(c));
+            const adjCodes = new Set(adj.map((c) => c.code));
+            const fRest = icd10Pool.filter((c) => !adjCodes.has(c.code) && (q === "" || mc(c)));
+            return (
+              <Menu>
+                <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder={ph} />
+                <div className="overflow-y-auto max-h-[220px]">
+                  {fAdj.length > 0 && (<><MenuHeader>Suggested</MenuHeader>{fAdj.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={handleSetChildIcdSelect} />)}{fRest.length > 0 && <MenuHeader>All Codes</MenuHeader>}</>)}
+                  {fRest.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={handleSetChildIcdSelect} />)}
+                  {fAdj.length === 0 && fRest.length === 0 && <p className="px-[8px] py-[8px] text-[13px] text-[var(--foreground-tertiary,#808080)]" style={{ fontFamily: "Lato, sans-serif" }}>No codes found</p>}
+                </div>
+              </Menu>
+            );
+          })() : (() => {
+            const pool = popover.list === "icd10" ? icd10Pool : cptPool;
+            const exclude = popover.list === "icd10"
+              ? icd10.map((c) => c.code).filter((c) => c !== popover.code)
+              : cpt.map((c) => c.code).filter((c) => c !== popover.code);
+            const onSelect = popover.list === "icd10" ? handleIcd10Select : handleCptSelect;
+            const ph = popover.code ? `Replace ${popover.code}…` : popover.list === "icd10" ? "Search ICD-10 codes…" : "Search CPT codes…";
+            const q = popoverQuery.toLowerCase();
+            const mc = (c: CodeItemType) => c.code.toLowerCase().includes(q) || c.description.toLowerCase().includes(q);
+            const fAdj = adjacent.filter((c) => !exclude.includes(c.code) && (q === "" || mc(c)));
+            const adjCodes = new Set(adjacent.map((c) => c.code));
+            const fRest = pool.filter((c) => !exclude.includes(c.code) && !adjCodes.has(c.code) && (q === "" || mc(c)));
+            return (
+              <Menu>
+                <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder={ph} />
+                <div className="overflow-y-auto max-h-[220px]">
+                  {fAdj.length > 0 && (<><MenuHeader>Suggested</MenuHeader>{fAdj.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={onSelect} />)}{fRest.length > 0 && <MenuHeader>All Codes</MenuHeader>}</>)}
+                  {fRest.map((c) => <CodeMenuItem key={c.code} item={c} onSelect={onSelect} />)}
+                  {fAdj.length === 0 && fRest.length === 0 && <p className="px-[8px] py-[8px] text-[13px] text-[var(--foreground-tertiary,#808080)]" style={{ fontFamily: "Lato, sans-serif" }}>No codes found</p>}
+                </div>
+              </Menu>
+            );
+          })()}
         </div>
       )}
     </ScribeLayout>
