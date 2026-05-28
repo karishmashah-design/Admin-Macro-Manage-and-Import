@@ -314,6 +314,8 @@ export const orderSetsPool: OrderSetPoolItem[] = [
 ];
 
 export const orderSetsAdjacent: Record<string, string[]> = {
-  "set-chest-pain-quest-radnet":   ["set-chest-pain-labcorp-radnet"],
-  "set-chest-pain-labcorp-radnet": ["set-chest-pain-quest-radnet"],
+  "set-chest-pain-quest-radnet":   ["set-cardiac-imaging-inhouse"],
+  "set-chest-pain-labcorp-radnet": ["set-cardiac-imaging-inhouse"],
+  "set-cardiac-imaging-inhouse":   ["set-chest-pain-quest-radnet", "set-chest-pain-labcorp-radnet"],
+  "set-htn-workup-quest":          ["set-cardiac-imaging-inhouse"],
 };

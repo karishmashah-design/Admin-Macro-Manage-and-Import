@@ -532,28 +532,54 @@ export default function R2CoChip() {
               (o.baseLabel ?? o.label).toLowerCase().includes(q) || o.detail.toLowerCase().includes(q);
             const adjIdSet = new Set(popover.code ? (orderSetsAdjacent[popover.code] ?? []) : []);
             const adjSets = orderSetsPool.filter((s) => s.id !== popover.code && adjIdSet.has(s.id) && (q === "" || matchesSet(s)));
-            const otherSets = orderSetsPool.filter((s) => s.id !== popover.code && !adjIdSet.has(s.id) && (q === "" || matchesSet(s)));
-            const filteredOrders = ordersPool.filter((o) => q === "" || matchesOrder(o));
-            const hasResults = adjSets.length > 0 || otherSets.length > 0 || filteredOrders.length > 0;
+            // Children of current set as individual order alternatives
+            const currentSet = orderSets.find((s) => s.id === popover.code);
+            const seenChildLabels = new Set<string>();
+            const childOrders = (currentSet?.children ?? [])
+              .map((c) => ordersPool.find((o) => o.baseLabel === c.label && o.company === c.company))
+              .filter((o): o is typeof ordersPool[0] => !!o)
+              .filter((o) => {
+                const key = o.baseLabel ?? o.label;
+                if (seenChildLabels.has(key)) return false;
+                seenChildLabels.add(key);
+                return q === "" || matchesOrder(o);
+              });
+            const yourSets = orderSetsPool.filter((s) =>
+              s.id !== popover.code &&
+              !adjIdSet.has(s.id) &&
+              !orderSets.some((os) => os.id === s.id) &&
+              (q === "" || matchesSet(s))
+            );
+            const seenOrderLabels = new Set<string>();
+            const filteredOrders = ordersPool.filter((o) => {
+              if (q !== "" && !matchesOrder(o)) return false;
+              const key = o.baseLabel ?? o.label;
+              if (seenOrderLabels.has(key)) return false;
+              seenOrderLabels.add(key);
+              return true;
+            });
+            const hasSuggested = adjSets.length > 0 || childOrders.length > 0;
+            const hasResults = hasSuggested || yourSets.length > 0 || filteredOrders.length > 0;
             return (
               <Menu>
                 <MenuSearch value={popoverQuery} onChange={setPopoverQuery} onClose={() => setPopover(null)} placeholder="Search order sets & orders…" />
                 <div className="overflow-y-auto max-h-[280px]">
-                  {adjSets.length > 0 && (
+                  {hasSuggested && (
                     <>
                       <MenuHeader>Suggested</MenuHeader>
                       {adjSets.map((s) => <MenuItem key={s.id} label={s.baseLabel} onClick={() => handleSetTitleSelect(s)} />)}
+                      {childOrders.map((o) => <MenuItem key={o.id} label={o.baseLabel ?? o.label} onClick={() => handleSetReplaceWithOrder(o)} />)}
                     </>
                   )}
-                  {otherSets.length > 0 && (
+                  {yourSets.length > 0 && (
                     <>
-                      {(adjSets.length > 0 || filteredOrders.length > 0) && <MenuHeader>Order Sets</MenuHeader>}
-                      {otherSets.map((s) => <MenuItem key={s.id} label={s.baseLabel} onClick={() => handleSetTitleSelect(s)} />)}
+                      <MenuHeader>Your Order Sets</MenuHeader>
+                      {yourSets.map((s) => <MenuItem key={s.id} label={s.baseLabel} onClick={() => handleSetTitleSelect(s)} />)}
                     </>
                   )}
                   {filteredOrders.length > 0 && (
                     <>
-                      {(adjSets.length > 0 || otherSets.length > 0) && <MenuHeader>Individual Orders</MenuHeader>}
+                      <MenuHeader>All Orders</MenuHeader>
                       {filteredOrders.map((o) => <MenuItem key={o.id} label={o.baseLabel ?? o.label} onClick={() => handleSetReplaceWithOrder(o)} />)}
                     </>
                   )}
