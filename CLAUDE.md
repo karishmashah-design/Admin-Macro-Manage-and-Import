@@ -55,7 +55,7 @@ When a design or screenshot includes a component not yet in `packages/ui`, searc
 ## Component Library (`packages/ui`)
 
 ### Available components (import from `@ds/ui`)
-`Button`, `IconButton`, `Icon`, `Checkbox`, `Chip`, `Switch`, `TextField`, `TextArea`, `Tabs`, `Badge`, `VisitStatus`, `Link`, `PrimaryNav`, `SecondaryNavItem`, `Menu`, `MenuItem`, `MenuHeader`, `MenuSearch`, `Overlay`, `VersionSwitcher`
+`Button`, `IconButton`, `Icon`, `Checkbox`, `Chip`, `Switch`, `TextField`, `TextArea`, `Tabs`, `Badge`, `VisitStatus`, `Link`, `PrimaryNav`, `SecondaryNavItem`, `Menu`, `MenuItem`, `MenuHeader`, `MenuSearch`, `Overlay`, `VersionSwitcher`, `Alert`, `Snackbar`, `AudioInputVolume`, `AudioPlayer`, `Avatar`, `ButtonGroup`, `SplitButton`, `RadioButton`, `RadioGroup`, `DatePicker`, `TimePicker`, `Divider`, `Loader`, `Skeleton`, `NotificationDot`, `Highlight`, `MobileHeader`, `StickyButtonBar`, `ListItem`, `ListSection`, `PopUp`, `ProgressBar`, `Pagination`, `StepIndicator`, `StarRating`, `Tooltip`, `PINInput`, `Table`, `TableCell`
 
 ### `Menu` / `MenuItem` / `MenuHeader` / `MenuSearch` — composable dropdown menus
 

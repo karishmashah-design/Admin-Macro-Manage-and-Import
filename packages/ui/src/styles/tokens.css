@@ -20,7 +20,16 @@
 
   *, *::before, *::after {
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
   }
+  *:hover {
+    scrollbar-color: #d0d0d0 transparent;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+  *:hover::-webkit-scrollbar-thumb { background: #d0d0d0; }
 
   button, a, [role="button"] {
     outline: none;

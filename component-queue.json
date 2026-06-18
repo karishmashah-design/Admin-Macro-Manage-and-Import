@@ -1,0 +1,41 @@
+{
+  "figma_file_key": "p8vIIGE9wPsJI9llj4luac",
+  "figma_library_key": "lk-fcc363be37010ee4c2e2489ab98a544f8aead88d6621d339262ac65cf0f342f93ffbddc528610a6260300d2e9ef1895220a2e86277db2264084322690dcb91fc",
+  "pending": [],
+  "done": [
+    { "name": "Alert/Notification", "note": "packages/ui Alert.tsx (Alert + Snackbar exports; Notification list-item flagged to questions)" },
+    { "name": "Audio Input Volume", "note": "packages/ui AudioInputVolume.tsx" },
+    { "name": "Audio Player", "note": "packages/ui AudioPlayer.tsx" },
+    { "name": "Avatar", "note": "packages/ui Avatar.tsx — initials fallback, 5 sizes, 4 status variants" },
+    { "name": "Button Group / Split Button", "note": "packages/ui ButtonGroup.tsx (ButtonGroup + SplitButton exports)" },
+    { "name": "Radio Button", "note": "packages/ui RadioButton.tsx (RadioButton + RadioGroup exports)" },
+    { "name": "Date / Time Picker", "note": "packages/ui DatePicker.tsx (DatePicker + TimePicker exports)" },
+    { "name": "Divider", "note": "packages/ui Divider.tsx — horizontal, vertical, labeled" },
+    { "name": "Highlighting", "note": "packages/ui Highlight.tsx — inline mark with 5 color variants" },
+    { "name": "Loader", "note": "packages/ui Loader.tsx (Loader + Skeleton exports)" },
+    { "name": "Notification Dot", "note": "packages/ui NotificationDot.tsx — plain dot or count badge" },
+    { "name": "Badge", "note": "packages/ui Badge.tsx" },
+    { "name": "Button", "note": "packages/ui Button.tsx" },
+    { "name": "Link", "note": "packages/ui Link.tsx" },
+    { "name": "Checkbox", "note": "packages/ui Checkbox.tsx" },
+    { "name": "Chip", "note": "packages/ui Chip.tsx" },
+    { "name": "Icon Button", "note": "packages/ui Button.tsx (IconButton export)" },
+    { "name": "Menu & Item", "note": "packages/ui Menu.tsx (Menu, MenuItem, MenuHeader, MenuSearch exports)" },
+    { "name": "Navigation", "note": "packages/ui PrimaryNav.tsx + SecondaryNavItem.tsx" },
+    { "name": "Overlay", "note": "packages/ui Overlay.tsx" },
+    { "name": "Switch", "note": "packages/ui Switch.tsx" },
+    { "name": "Tab", "note": "packages/ui Tabs.tsx" },
+    { "name": "Text Field(s)", "note": "packages/ui TextField.tsx + TextArea.tsx" },
+    { "name": "Header / Sticky Button (Mobile)", "note": "packages/ui MobileHeader.tsx (MobileHeader + StickyButtonBar exports)" },
+    { "name": "List & Item", "note": "packages/ui ListItem.tsx (ListItem + ListSection exports)" },
+    { "name": "Passcode", "note": "packages/ui PINInput.tsx — PIN/passcode digit input, controlled, paste support, masked mode" },
+    { "name": "Pop-Up", "note": "packages/ui PopUp.tsx — modal dialog, 3 sizes, backdrop, footer slot" },
+    { "name": "Progress / Pagination", "note": "packages/ui Progress.tsx (ProgressBar + Pagination + StepIndicator exports)" },
+    { "name": "Star Rating", "note": "packages/ui StarRating.tsx — interactive or read-only, half-star display support" },
+    { "name": "Table", "note": "packages/ui Table.tsx (Table + TableCell exports) — sortable columns, selectable rows, sticky header, empty state" },
+    { "name": "Tooltip", "note": "packages/ui Tooltip.tsx — wrapper with 4 positions, hover delay" }
+  ],
+  "questions": [
+    { "name": "Notification", "figma_page": "Alert/Notification", "question": "The Figma page has a 'Notification' component_set separate from Alert and Snackbar. Is this a notification-bell panel item (list of notifications), a toast variant, or something else? Built Alert + Snackbar; this one needs a spec look before building." }
+  ]
+}

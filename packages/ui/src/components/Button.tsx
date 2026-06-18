@@ -27,14 +27,23 @@ function padKey(hasPrefix: boolean, hasSuffix: boolean): "nn" | "pn" | "np" | "p
 }
 
 const variants = {
-  primary:          "bg-[var(--foreground-primary,#1a1a1a)] text-[var(--foreground-oninverse,white)] hover:bg-[var(--neutral-800,#333)] active:bg-[var(--neutral-700,#4d4d4d)]",
-  secondary:        "border border-[var(--neutral-1000,black)] border-solid bg-transparent text-[var(--foreground-primary,#1a1a1a)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
-  tertiary:         "bg-transparent text-[var(--foreground-brand,#1132ee)] hover:bg-[var(--litmus-25,#f1f3fe)] active:bg-[var(--litmus-25,#f1f3fe)]",
+  primary:            "bg-[var(--foreground-primary,#1a1a1a)] text-[var(--foreground-oninverse,white)] hover:bg-[var(--neutral-800,#333)] active:bg-[var(--neutral-700,#4d4d4d)]",
+  secondary:          "border border-[var(--neutral-1000,black)] border-solid bg-transparent text-[var(--foreground-primary,#1a1a1a)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
+  tertiary:           "bg-transparent text-[var(--foreground-brand,#1132ee)] hover:bg-[var(--litmus-25,#f1f3fe)] active:bg-[var(--litmus-25,#f1f3fe)]",
   "tertiary-neutral": "bg-transparent text-[var(--foreground-secondary,#666)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
+  danger:             "bg-[var(--foreground-semantic-danger,#bb1411)] text-white hover:bg-[var(--red-700,#8c0f0d)] active:bg-[var(--red-800,#5d0a09)]",
+  "danger-secondary": "border border-[var(--foreground-semantic-danger,#bb1411)] border-solid bg-transparent text-[var(--foreground-semantic-danger,#bb1411)] hover:bg-[var(--red-25,#fef1f1)] active:bg-[var(--red-50,#fde8e8)]",
+  // Inverse — for use on dark/colored backgrounds
+  "primary-inverse":  "bg-white text-[var(--foreground-primary,#1a1a1a)] hover:bg-[var(--neutral-100,#e6e6e6)] active:bg-[var(--neutral-200,#ccc)]",
+  "secondary-inverse":"border border-white border-solid bg-transparent text-white hover:bg-white/10 active:bg-white/20",
+  "tertiary-inverse": "bg-transparent text-white hover:bg-white/10 active:bg-white/20",
 };
 
+export type ButtonVariant = keyof typeof variants;
+export type IconButtonVariant = keyof typeof iconVariants;
+
 export type ButtonProps = {
-  variant?: keyof typeof variants;
+  variant?: ButtonVariant;
   size?: keyof typeof sizeTokens;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
@@ -77,17 +86,19 @@ const iconSizes = {
 };
 
 const iconVariants = {
-  primary:   "bg-[var(--foreground-primary,#1a1a1a)] text-[var(--foreground-oninverse,white)] hover:bg-[var(--neutral-800,#333)] active:bg-[var(--neutral-700,#4d4d4d)]",
-  secondary: "border border-[var(--neutral-1000,black)] border-solid bg-transparent hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
-  tertiary:          "bg-transparent text-[var(--accent,#1132ee)] hover:bg-[var(--litmus-25,#f1f3fe)] active:bg-[var(--litmus-25,#f1f3fe)]",
+  primary:            "bg-[var(--foreground-primary,#1a1a1a)] text-[var(--foreground-oninverse,white)] hover:bg-[var(--neutral-800,#333)] active:bg-[var(--neutral-700,#4d4d4d)]",
+  secondary:          "border border-[var(--neutral-1000,black)] border-solid bg-transparent text-[var(--foreground-primary,#1a1a1a)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
+  tertiary:           "bg-transparent text-[var(--accent,#1132ee)] hover:bg-[var(--litmus-25,#f1f3fe)] active:bg-[var(--litmus-25,#f1f3fe)]",
   "tertiary-neutral": "bg-transparent text-[var(--foreground-secondary,#666)] hover:bg-[var(--surface-1,#f7f7f7)] active:bg-[var(--surface-2,#f2f2f2)]",
-  accent:    "bg-[var(--accent,#1132ee)] text-white hover:bg-[var(--hover,#0d28bf)] active:bg-[var(--active,#0a1e8f)]",
-  magic:     "text-white hover:opacity-90 active:opacity-80",
+  accent:             "bg-[var(--accent,#1132ee)] text-white hover:bg-[var(--hover,#0d28bf)] active:bg-[var(--active,#0a1e8f)]",
+  danger:             "bg-transparent text-[var(--foreground-semantic-danger,#bb1411)] hover:bg-[var(--red-25,#fef1f1)] active:bg-[var(--red-50,#fde8e8)]",
+  inverse:            "bg-transparent text-white hover:bg-white/10 active:bg-white/20",
+  magic:              "text-white hover:opacity-90 active:opacity-80",
 };
 
 export type IconButtonProps = {
   icon: React.ReactNode;
-  variant?: keyof typeof iconVariants;
+  variant?: IconButtonVariant;
   size?: keyof typeof iconSizes;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   disabled?: boolean;

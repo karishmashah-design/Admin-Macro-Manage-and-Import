@@ -1,0 +1,35 @@
+{
+  "figma_file_key": "p8vIIGE9wPsJI9llj4luac",
+  "figma_library_key": "lk-fcc363be37010ee4c2e2489ab98a544f8aead88d6621d339262ac65cf0f342f93ffbddc528610a6260300d2e9ef1895220a2e86277db2264084322690dcb91fc",
+
+  "pending": [],
+
+  "remove": [
+    { "component": "ListItem / ListSection", "done": true, "note": "Removed list sections from ListsTab in ds-preview. Component still in packages/ui for any prototype that might use it." },
+    { "component": "StarRating", "done": true, "note": "Removed from ds-preview, index.ts exports, and App.tsx import. Component file kept in packages/ui but no longer exported." }
+  ],
+
+  "keep_as_is": [
+    { "component": "StepIndicator", "note": "User likes it even though it wasn't in Figma. Keep." }
+  ],
+
+  "done": [
+    { "component": "ButtonGroup", "note": "Rewritten: single-select = surface-2 container, white elevated selected card; multi-select = accent blue selected. No more black fill." },
+    { "component": "Alert / Snackbar / Notification", "note": "Completely rewritten: white card with colored border per variant (neutral/info/success/warning/danger). Notification added as alert-without-dismiss + up to 2 CTAs. Snackbar is now single-line bordered card, not dark toast." },
+    { "component": "Avatar text color", "note": "All initials now use --foreground-primary (dark). Background palette expanded to 7 colors including purple, cyan." },
+    { "component": "Divider label", "note": "Removed uppercase class from labeled divider." },
+    { "component": "Highlight colors", "note": "Renamed colors to semantic names (success/warning/danger/info/history) with correct token values from Figma: danger=Red/50, info=Litmus/50, etc." },
+    { "component": "AudioInputVolume", "note": "Rewritten: wide pill-shaped bars (8×20px), mic icon on left, level shown by filled-count from left, gray unfilled bars. Removed waveform height variation." },
+    { "component": "Button / IconButton", "note": "Added: danger, danger-secondary, primary-inverse, secondary-inverse, tertiary-inverse variants for Button. Added: danger, inverse variants for IconButton." },
+    { "component": "AudioPlayer", "note": "Skip and play/pause buttons now use DS IconButton (tertiary-neutral for skip, accent for play/pause)." },
+    { "component": "DatePicker", "note": "Date cells changed from rounded-full (circle) to rounded-[4px] (rounded rect). Nav chevrons use DS IconButton." },
+    { "component": "MobileHeader", "note": "Title now centered with absolute-positioned left/right slots. Back button shows '< Back' text, not bare arrow. Added flexible leading slot." },
+    { "component": "PopUp", "note": "Removed footer divider. Buttons now stacked full-width vertically via actions prop. Added illustration slot at top. Compact centered card layout." },
+    { "component": "TextField", "note": "Rewritten: label above, S/M/L sizes (28/36/44px), all states (default/hover/focused/success/error/disabled). feedback is now object {type, message?}. Feedback icon + caption below. prefix/suffix slots." },
+    { "component": "TextArea", "note": "Rewritten: label, rows (min height), auto-expand, feedback {type, message?}, maxLength with character counter inside border (bottom-right). Made interactive in demo with controlled state." },
+    { "component": "ScribeLongField", "note": "New component. sectionTitle header + mode-driven actions (view: edit+dictate icons; edit: edit+dictate+Copy btn; dictating/processing: mic/spinner + Dictate + Save + Cancel). Accent border in dictating/processing. Content editable only in edit mode." },
+    { "component": "Link", "note": "Fixed children API (was using label prop, rendering nothing). Rewrote to use children, added underline, external icon support, disabled state, neutral intent. Demo updated with inline usage example." },
+    { "component": "Table", "note": "Removed all-caps from header (was uppercase tracking-[0.8px]). Added density prop (M/S). Added TableFooter with record count + rows-per-page selector + prev/next pagination. Added BadgesCell and StatusCell helper components. Updated demo with richer Person+Avatar+Badges+Status columns and TableFooter." },
+    { "component": "ProgressBar / PageIndicator", "note": "ProgressBar rewritten as thin 3px segment stepper (steps/current props). Pagination replaced by PageIndicator (dot-based carousel indicator, filled=current). Old Pagination kept for backward compat. TableFooter handles large-count pagination. StepIndicator unchanged." }
+  ]
+}
