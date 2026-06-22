@@ -8,6 +8,7 @@ import { RecordingStatus, ControlButtons } from "../components/RecordingParts";
 import { MobileRecording } from "../components/MobileRecording";
 import { PanelCard } from "../components/PanelCard";
 import { PrevisitContent } from "../components/PrevisitContent";
+import { ChatInput } from "../components/ChatInput";
 
 const MOBILE_MAX = 768; // below this → mobile
 const TWO_PANEL_MIN = 1024; // at/above this → up to 2 side panels; 768–1023 → 1
@@ -41,23 +42,6 @@ function TopBarPatientInfo() {
         <span>·</span>
         <span>Virtual</span>
       </div>
-    </div>
-  );
-}
-
-function ChatInput() {
-  return (
-    <div className="flex min-h-[48px] w-full items-center gap-[4px] rounded-[6px] border border-[#8044ff] px-[12px] py-[8px]">
-      <input
-        placeholder="Ask assistant"
-        className="min-w-px flex-1 bg-transparent font-['Lato'] text-[15px] leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] placeholder:text-[#808080] focus:outline-none"
-      />
-      <button className="flex size-[36px] items-center justify-center rounded-[6px] text-[var(--foreground-primary,#1a1a1a)]">
-        <Icon name="mic" size={20} />
-      </button>
-      <button className="flex size-[36px] items-center justify-center rounded-[6px] text-[var(--accent,#1132ee)]">
-        <Icon name="send" size={20} />
-      </button>
     </div>
   );
 }
@@ -150,7 +134,7 @@ export default function MultiPanelRecording({ onEndVisit }: { onEndVisit?: () =>
     if (id === "previsit") {
       return (
         <PanelCard
-          icon={<Icon name="admin_meds" size={20} />}
+          icon={<Icon name="admin_meds" size={20} filled />}
           title="Previsit Summary"
           onClose={() => togglePanel("previsit")}
         >

@@ -20,7 +20,11 @@ export function PanelCard({
     <div className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[12px] bg-white shadow-[0_4px_16px_2px_rgba(0,0,0,0.07)]">
       {/* header */}
       <div className="flex items-center gap-[8px] px-[20px] pb-[8px] pt-[16px]">
-        {icon && <span className="text-[var(--accent,#1132ee)]">{icon}</span>}
+        {icon && (
+          <span className="flex size-[20px] shrink-0 items-center justify-center text-[var(--accent,#1132ee)]">
+            {icon}
+          </span>
+        )}
         <p className="min-w-0 flex-1 font-['Lato'] text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]">
           {title}
         </p>
