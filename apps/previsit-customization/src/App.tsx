@@ -36,5 +36,5 @@ export default function App() {
       </div>
     );
   }
-  return <VersionSwitcher screens={screens} initialRound="R2" initialDirection="Hover Handles" />;
+  return <VersionSwitcher screens={screens} initialRound="R3" initialDirection="Baseline" />;
 }
