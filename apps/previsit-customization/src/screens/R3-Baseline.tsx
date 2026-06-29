@@ -552,11 +552,11 @@ const drawerGroups: DrawerRow[] = [
   { id: "vitals",                label: "Vitals",                fixedLabel: "Current" },
   { id: "active-problems",       label: "Active Problems",       fixedLabel: "Current" },
   { id: "lab-results", label: "Lab Results", children: [
-    { id: "lab-recent",  label: "Recent Labs",       timeFrameKey: "lab-recent",  options: ["Since last visit", "Past 3 months", "Past 6 months", "Past year"] },
+    { id: "lab-recent",  label: "Recent Labs",       fixedLabel: "Since last visit" },
     { id: "lab-history", label: "Historical trends", timeFrameKey: "lab-history", options: ["Past 6 months", "Past 12 months", "Past 18 months", "Past 5 years"] },
   ]},
   { id: "imaging", label: "Imaging & Diagnostics", children: [
-    { id: "imaging-recent",  label: "Recent imaging",      timeFrameKey: "imaging-recent",  options: ["Since last visit", "Past 3 months", "Past 6 months", "Past year"] },
+    { id: "imaging-recent",  label: "Recent imaging",      fixedLabel: "Since last visit" },
     { id: "imaging-history", label: "Historical findings", timeFrameKey: "imaging-history", options: ["Past 6 months", "Past 12 months", "Past 18 months", "Past 5 years"] },
   ]},
   { id: "historical-procedures", label: "Historical Procedures", timeFrameKey: "historical-procedures",  options: ["Past year", "Past 3 years", "Past 5 years"] },

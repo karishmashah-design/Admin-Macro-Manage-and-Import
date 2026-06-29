@@ -553,11 +553,11 @@ const drawerGroups: DrawerRow[] = [
   { id: "vitals",                label: "Vitals",                description: "Current measurements from today's intake",             fixedLabel: "Current" },
   { id: "active-problems",       label: "Active Problems",       description: "Full list of active diagnoses",                        fixedLabel: "Current" },
   { id: "lab-results", label: "Lab Results", description: "Lab values across recent and historical timeframes", children: [
-    { id: "lab-recent",  label: "Recent Labs",       description: "Most recent draw results with flags",   timeFrameKey: "lab-recent",  options: ["Since last visit", "Past 3 months", "Past 6 months", "Past year"] },
+    { id: "lab-recent",  label: "Recent Labs",       description: "Most recent draw results with flags",   fixedLabel: "Since last visit" },
     { id: "lab-history", label: "Historical trends", description: "Value trends and prior abnormals",      timeFrameKey: "lab-history", options: ["Past 6 months", "Past 12 months", "Past 18 months", "Past 5 years"] },
   ]},
   { id: "imaging", label: "Imaging & Diagnostics", description: "Radiology, echo, and procedure results", children: [
-    { id: "imaging-recent",  label: "Recent imaging",      description: "New studies completed since last visit",   timeFrameKey: "imaging-recent",  options: ["Since last visit", "Past 3 months", "Past 6 months", "Past year"] },
+    { id: "imaging-recent",  label: "Recent imaging",      description: "New studies completed since last visit",   fixedLabel: "Since last visit" },
     { id: "imaging-history", label: "Historical findings", description: "Prior radiology findings and diagnostics", timeFrameKey: "imaging-history", options: ["Past 6 months", "Past 12 months", "Past 18 months", "Past 5 years"] },
   ]},
   { id: "historical-procedures", label: "Historical Procedures", description: "Past admissions, surgeries, and major procedures", timeFrameKey: "historical-procedures",  options: ["Past year", "Past 3 years", "Past 5 years"] },
