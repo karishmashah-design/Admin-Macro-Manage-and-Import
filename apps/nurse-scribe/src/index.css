@@ -1,0 +1,17 @@
+.thin-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+.thin-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.35);
+}
