@@ -12,7 +12,7 @@ import {
 
 type PopoverTarget = {
   rect: DOMRect;
-  list: "icd10" | "cpt" | "order" | "order-icd" | "order-company" | "set-title" | "set-company" | "set-child-company" | "set-child-icd";
+  list: "icd10" | "cpt" | "order" | "order-icd" | "order-company" | "set-title" | "set-lab-company" | "set-imaging-company" | "set-child-company" | "set-child-icd";
   code?: string;
   setId?: string;
 };
@@ -40,8 +40,14 @@ export default function R2Inline() {
 
   function handleIcd10Select(item: CodeItem) {
     if (popover?.code) {
-      setIcd10((prev) => prev.map((c) => (c.code === popover.code ? item : c)));
-      setOrders((prev) => prev.map((o) => o.relatedIcd === popover.code ? { ...o, relatedIcd: item.code } : o));
+      const old = popover.code;
+      setIcd10((prev) => prev.map((c) => (c.code === old ? item : c)));
+      setOrders((prev) => prev.map((o) => o.relatedIcd === old ? { ...o, relatedIcd: item.code } : o));
+      setOrderSets((prev) => prev.map((s) => ({
+        ...s,
+        relatedIcd: s.relatedIcd === old ? item.code : s.relatedIcd,
+        children: s.children.map((c) => ({ ...c, relatedIcd: c.relatedIcd === old ? item.code : c.relatedIcd })),
+      })));
     } else {
       setIcd10((prev) => [...prev, item]);
     }
@@ -97,7 +103,8 @@ export default function R2Inline() {
         id: poolItem.id,
         label: poolItem.baseLabel,
         baseLabel: poolItem.baseLabel,
-        defaultCompany: poolItem.defaultCompany,
+        defaultLabCompany: poolItem.defaultLabCompany,
+        defaultImagingCompany: poolItem.defaultImagingCompany,
         relatedIcd: poolItem.relatedIcd,
         children: poolItem.children.map((c) => {
           const existing = s.children.find((sc) => sc.label === c.label);
@@ -138,12 +145,22 @@ export default function R2Inline() {
     }));
   }
 
-  function handleSetCompanySelect(company: string) {
+  function handleSetLabCompanySelect(company: string) {
     if (!popover?.code) return;
     setOrderSets((prev) => prev.map((s) => s.id !== popover.code ? s : {
       ...s,
-      defaultCompany: company,
-      children: s.children.map((c) => ({ ...c, company })),
+      defaultLabCompany: company,
+      children: s.children.map((c) => c.type === "lab" ? { ...c, company } : c),
+    }));
+    setPopover(null);
+  }
+
+  function handleSetImagingCompanySelect(company: string) {
+    if (!popover?.code) return;
+    setOrderSets((prev) => prev.map((s) => s.id !== popover.code ? s : {
+      ...s,
+      defaultImagingCompany: company,
+      children: s.children.map((c) => c.type === "imaging" ? { ...c, company } : c),
     }));
     setPopover(null);
   }
@@ -184,12 +201,23 @@ export default function R2Inline() {
       })
     : [];
 
-  const setCompanyOptions: string[] = (() => {
-    if (popover?.list !== "set-company" || !popover.code) return [];
+  const setLabCompanyOptions: string[] = (() => {
+    if (popover?.list !== "set-lab-company" || !popover.code) return [];
     const set = orderSets.find((s) => s.id === popover.code);
     if (!set) return [];
     const seen = new Set<string>();
-    set.children.forEach((child) => {
+    set.children.filter((c) => c.type === "lab").forEach((child) => {
+      ordersPool.filter((x) => x.baseLabel === child.label && x.company).forEach((x) => seen.add(x.company!));
+    });
+    return Array.from(seen);
+  })();
+
+  const setImagingCompanyOptions: string[] = (() => {
+    if (popover?.list !== "set-imaging-company" || !popover.code) return [];
+    const set = orderSets.find((s) => s.id === popover.code);
+    if (!set) return [];
+    const seen = new Set<string>();
+    set.children.filter((c) => c.type === "imaging").forEach((child) => {
       ordersPool.filter((x) => x.baseLabel === child.label && x.company).forEach((x) => seen.add(x.company!));
     });
     return Array.from(seen);
@@ -202,6 +230,32 @@ export default function R2Inline() {
     if (!child) return [];
     return ordersPool.filter((x) => x.baseLabel === child.label && x.company !== child.company);
   })();
+
+  // For "order" popover (title click): exclude same-baseLabel items so we show
+  // different orders, not the same order at a different vendor.
+  const orderTitleSameBaseIds: Set<string> = (() => {
+    if (popover?.list !== "order" || !popover.code) return new Set();
+    const cur = orders.find((o) => o.id === popover.code);
+    const bl = cur?.baseLabel ?? cur?.label;
+    if (!bl) return new Set();
+    return new Set(ordersPool.filter((x) => (x.baseLabel ?? x.label) === bl).map((x) => x.id));
+  })();
+
+  const orderTitleAdjacent = popover?.list === "order" && popover.code
+    ? (ordersAdjacent[popover.code] ?? [])
+        .filter((id) => !orderTitleSameBaseIds.has(id))
+        .map((id) => ordersPool.find((x) => x.id === id)!)
+        .filter(Boolean)
+    : [];
+
+  const orderTitleExclude = popover?.list === "order"
+    ? [
+        ...(popover.code
+          ? orders.map((o) => o.id).filter((id) => id !== popover.code)
+          : orders.map((o) => o.id)),
+        ...Array.from(orderTitleSameBaseIds),
+      ]
+    : [];
 
   const POPOVER_MAX_H = 280;
   const popoverStyle: React.CSSProperties = popover
@@ -227,14 +281,14 @@ export default function R2Inline() {
         {/* ── Diagnostic Codes ─────────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]">
+            <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)]">
               Diagnostic Codes
             </h2>
           </div>
 
           {/* ICD-10 */}
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px] mb-[24px]">
@@ -244,10 +298,10 @@ export default function R2Inline() {
                   className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "icd10", c.code)}
                 >
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">
                     {c.code}
                   </span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {c.description}
                   </span>
                 </div>
@@ -263,7 +317,7 @@ export default function R2Inline() {
 
           {/* CPT */}
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px]">
@@ -273,10 +327,10 @@ export default function R2Inline() {
                   className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "cpt", c.code)}
                 >
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">
                     {c.code}
                   </span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {c.description}
                   </span>
                 </div>
@@ -293,7 +347,7 @@ export default function R2Inline() {
 
         {/* ── Orders ───────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
+          <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
             Orders
           </h2>
           <div className="flex flex-col gap-[8px]">
@@ -304,15 +358,15 @@ export default function R2Inline() {
                   onClick={(e) => openPopover(e, "order", o.id)}
                   className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
                 >
-                  <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {o.baseLabel ?? o.label}
                   </span>
                 </button>
                 {o.company && (
-                  <Chip label={o.company} color="neutral" onClick={(e) => openPopover(e, "order-company", o.id)} />
+                  <Chip label={o.company} color="neutral" size="XS" onClick={(e) => openPopover(e, "order-company", o.id)} />
                 )}
                 {o.relatedIcd ? (
-                  <Chip label={o.relatedIcd} color="accent" onClick={(e) => openPopover(e, "order-icd", o.id)} />
+                  <Chip label={o.relatedIcd} color="accent" size="XS" onClick={(e) => openPopover(e, "order-icd", o.id)} />
                 ) : (
                   <button
                     onClick={(e) => openPopover(e, "order-icd", o.id)}
@@ -322,7 +376,7 @@ export default function R2Inline() {
                   </button>
                 )}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                  <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                     onClick={() => setOrders((prev) => prev.filter((x) => x.id !== o.id))} aria-label="Remove" />
                 </div>
               </div>
@@ -330,8 +384,14 @@ export default function R2Inline() {
 
             {/* Order sets */}
             {orderSets.map((set) => {
-              const allSameCompany = set.children.every((c) => c.company === set.defaultCompany);
-              const companyLabel = allSameCompany ? set.defaultCompany : "Mixed";
+              const labChildren = set.children.filter((c) => c.type === "lab");
+              const imagingChildren = set.children.filter((c) => c.type === "imaging");
+              const labChipLabel = labChildren.length > 0
+                ? (labChildren.every((c) => c.company === labChildren[0].company) ? labChildren[0].company : "Mixed labs")
+                : null;
+              const imagingChipLabel = imagingChildren.length > 0
+                ? (imagingChildren.every((c) => c.company === imagingChildren[0].company) ? imagingChildren[0].company : "Mixed imaging")
+                : null;
 
               return (
                 <div key={set.id} className="flex flex-col gap-[4px]">
@@ -341,20 +401,21 @@ export default function R2Inline() {
                       onClick={(e) => openPopover(e, "set-title", set.id)}
                       className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
                     >
-                      <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                      <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                         {set.baseLabel ?? set.label}
                       </span>
                     </button>
-                    <Chip
-                      label={companyLabel}
-                      color="neutral"
-                      onClick={(e) => openPopover(e, "set-company", set.id)}
-                    />
+                    {labChipLabel && (
+                      <Chip label={labChipLabel} color="neutral" size="XS" onClick={(e) => openPopover(e, "set-lab-company", set.id)} />
+                    )}
+                    {imagingChipLabel && (
+                      <Chip label={imagingChipLabel} color="neutral" size="XS" onClick={(e) => openPopover(e, "set-imaging-company", set.id)} />
+                    )}
                     {set.relatedIcd && (
-                      <Chip label={set.relatedIcd} color="accent" />
+                      <Chip label={set.relatedIcd} color="accent" size="XS" />
                     )}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                      <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                         onClick={() => setOrderSets((prev) => prev.filter((s) => s.id !== set.id))} aria-label="Remove" />
                     </div>
                   </div>
@@ -368,10 +429,15 @@ export default function R2Inline() {
                           state={child.checked ? "selected" : "unselected"}
                           onChange={() => toggleSetChild(set.id, child.id)}
                         />
-                        <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                        <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                           {child.label}
                         </span>
-                        <Chip label={child.company} color="neutral" />
+                        <Chip
+                          label={child.company}
+                          color="neutral"
+                          size="XS"
+                          onClick={(e) => openPopover(e, "set-child-company", child.id, set.id)}
+                        />
                       </div>
                     ))}
                   </div>
@@ -406,12 +472,8 @@ export default function R2Inline() {
           ) : popover.list === "order" ? (
             <OrderSearch
               pool={ordersPool}
-              adjacent={popover.code
-                ? (ordersAdjacent[popover.code] ?? []).map((id) => ordersPool.find((x) => x.id === id)!).filter(Boolean)
-                : []}
-              exclude={popover.code
-                ? orders.map((o) => o.id).filter((id) => id !== popover.code)
-                : orders.map((o) => o.id)}
+              adjacent={orderTitleAdjacent}
+              exclude={orderTitleExclude}
               onSelect={handleOrderSelect}
               onClose={() => setPopover(null)}
             />
@@ -434,8 +496,8 @@ export default function R2Inline() {
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
                 <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  Select lab for {orders.find((o) => o.id === popover.code)?.baseLabel}
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
+                  Select vendor for {orders.find((o) => o.id === popover.code)?.baseLabel}
                 </span>
               </div>
               <div className="py-[4px]">
@@ -444,7 +506,6 @@ export default function R2Inline() {
                     key={variant.id}
                     onMouseDown={(e) => { e.preventDefault(); handleCompanySelect(variant); }}
                     className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
                   >
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
                     <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>
@@ -452,21 +513,40 @@ export default function R2Inline() {
                 ))}
               </div>
             </div>
-          ) : popover.list === "set-company" ? (
+          ) : popover.list === "set-lab-company" ? (
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
-                <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
-                  Select lab for all orders in {orderSets.find((s) => s.id === popover.code)?.label}
+                <Icon name="science" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
+                  Select vendor for all labs in {orderSets.find((s) => s.id === popover.code)?.label}
                 </span>
               </div>
               <div className="py-[4px]">
-                {setCompanyOptions.map((company) => (
+                {setLabCompanyOptions.map((company) => (
                   <button
                     key={company}
-                    onMouseDown={(e) => { e.preventDefault(); handleSetCompanySelect(company); }}
+                    onMouseDown={(e) => { e.preventDefault(); handleSetLabCompanySelect(company); }}
                     className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
+                  >
+                    <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2]">{company}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : popover.list === "set-imaging-company" ? (
+            <div className="flex flex-col bg-white">
+              <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
+                <Icon name="radiology" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
+                  Select vendor for all imaging in {orderSets.find((s) => s.id === popover.code)?.label}
+                </span>
+              </div>
+              <div className="py-[4px]">
+                {setImagingCompanyOptions.map((company) => (
+                  <button
+                    key={company}
+                    onMouseDown={(e) => { e.preventDefault(); handleSetImagingCompanySelect(company); }}
+                    className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
                   >
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2]">{company}</span>
                   </button>
@@ -477,11 +557,11 @@ export default function R2Inline() {
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
                 <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
                   {(() => {
                     const set = orderSets.find((s) => s.id === popover.setId);
                     const child = set?.children.find((c) => c.id === popover.code);
-                    return `Select lab for ${child?.label}`;
+                    return `Select vendor for ${child?.label}`;
                   })()}
                 </span>
               </div>
@@ -491,7 +571,6 @@ export default function R2Inline() {
                     key={variant.id}
                     onMouseDown={(e) => { e.preventDefault(); handleSetChildCompanySelect(variant); }}
                     className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}
                   >
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
                     <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>

@@ -90,7 +90,7 @@ const FIELD_LABEL = "w-[80px] shrink-0 pl-[8px] text-[11px] font-bold tracking-[
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className={FIELD_LABEL} style={{ fontFamily: "Lato, sans-serif" }}>
+    <span className={FIELD_LABEL}>
       {children}
     </span>
   );
@@ -153,15 +153,15 @@ function OrderCard({ order, meta, onMetaChange, onToggle, onTitleClick, onCompan
           onClick={onTitleClick}
           className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
         >
-          <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+          <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
             {order.baseLabel ?? order.label}
           </span>
         </button>
         {order.company && (
-          <Chip label={order.company} color="neutral" onClick={onCompanyClick} />
+          <Chip label={order.company} color="neutral" size="XS" onClick={onCompanyClick} />
         )}
         {order.relatedIcd ? (
-          <Chip label={order.relatedIcd} color="accent" onClick={onIcdClick} />
+          <Chip label={order.relatedIcd} color="accent" size="XS" onClick={onIcdClick} />
         ) : (
           <button
             onClick={onIcdClick}
@@ -171,7 +171,7 @@ function OrderCard({ order, meta, onMetaChange, onToggle, onTitleClick, onCompan
           </button>
         )}
         <div className="ml-auto">
-          <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+          <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
             onClick={onRemove} aria-label="Remove" />
         </div>
       </div>
@@ -236,14 +236,14 @@ function SetCard({
           onClick={onTitleClick}
           className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
         >
-          <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+          <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
             {set.baseLabel ?? set.label}
           </span>
         </button>
-        <Chip label={companyLabel} color="neutral" onClick={onCompanyClick} />
-        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" />}
+        <Chip label={companyLabel} color="neutral" size="XS" onClick={onCompanyClick} />
+        {set.relatedIcd && <Chip label={set.relatedIcd} color="accent" size="XS" />}
         <div className="ml-auto">
-          <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+          <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
             onClick={onRemove} aria-label="Remove" />
         </div>
       </div>
@@ -271,10 +271,10 @@ function SetCard({
                   state={child.checked ? "selected" : "unselected"}
                   onChange={() => onToggleChild(child.id)}
                 />
-                <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                <span className="t-body-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                   {child.label}
                 </span>
-                <Chip label={child.company} color="neutral" onClick={(e) => onChildCompanyClick(e, child.id)} />
+                <Chip label={child.company} color="neutral" size="XS" onClick={(e) => onChildCompanyClick(e, child.id)} />
               </div>
               {child.checked && (
                 <div className="ml-[29px] flex flex-col gap-[6px]">
@@ -296,7 +296,7 @@ function SetCard({
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
-export default function R2Cards() {
+export default function R1DateNotes() {
   const [activeTab, setActiveTab] = useState("diagnostics");
   const [icd10, setIcd10] = useState<CodeItem[]>(initialIcd10);
   const [cpt, setCpt] = useState<CodeItem[]>(initialCpt);
@@ -362,8 +362,14 @@ export default function R2Cards() {
 
   function handleIcd10Select(item: CodeItem) {
     if (popover?.code) {
-      setIcd10((prev) => prev.map((c) => (c.code === popover.code ? item : c)));
-      setOrders((prev) => prev.map((o) => o.relatedIcd === popover.code ? { ...o, relatedIcd: item.code } : o));
+      const old = popover.code;
+      setIcd10((prev) => prev.map((c) => (c.code === old ? item : c)));
+      setOrders((prev) => prev.map((o) => o.relatedIcd === old ? { ...o, relatedIcd: item.code } : o));
+      setOrderSets((prev) => prev.map((s) => ({
+        ...s,
+        relatedIcd: s.relatedIcd === old ? item.code : s.relatedIcd,
+        children: s.children.map((c) => ({ ...c, relatedIcd: c.relatedIcd === old ? item.code : c.relatedIcd })),
+      })));
     } else {
       setIcd10((prev) => [...prev, item]);
     }
@@ -416,7 +422,8 @@ export default function R2Cards() {
         id: poolItem.id,
         label: poolItem.baseLabel,
         baseLabel: poolItem.baseLabel,
-        defaultCompany: poolItem.defaultCompany,
+        defaultLabCompany: poolItem.defaultLabCompany,
+        defaultImagingCompany: poolItem.defaultImagingCompany,
         relatedIcd: poolItem.relatedIcd,
         children: poolItem.children.map((c) => {
           const existing = s.children.find((sc) => sc.label === c.label);
@@ -454,7 +461,8 @@ export default function R2Cards() {
     if (!popover?.code) return;
     setOrderSets((prev) => prev.map((s) => s.id !== popover.code ? s : {
       ...s,
-      defaultCompany: company,
+      defaultLabCompany: company,
+      defaultImagingCompany: company,
       children: s.children.map((c) => ({ ...c, company })),
     }));
     setPopover(null);
@@ -538,12 +546,12 @@ export default function R2Cards() {
         {/* ── Diagnostic Codes ──────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]">
+            <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)]">
               Diagnostic Codes
             </h2>
           </div>
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px] mb-[24px]">
@@ -551,8 +559,8 @@ export default function R2Cards() {
               <div key={c.code} className="group flex items-center gap-[4px]">
                 <div className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "icd10", c.code)}>
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>{c.code}</span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{c.description}</span>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">{c.code}</span>
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{c.description}</span>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                   <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
@@ -564,7 +572,7 @@ export default function R2Cards() {
               onClick={(e) => openPopover(e, "icd10")} className="self-start">Add ICD-10 code</Button>
           </div>
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px]">
@@ -572,8 +580,8 @@ export default function R2Cards() {
               <div key={c.code} className="group flex items-center gap-[4px]">
                 <div className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "cpt", c.code)}>
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>{c.code}</span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{c.description}</span>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">{c.code}</span>
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{c.description}</span>
                 </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                   <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
@@ -588,7 +596,7 @@ export default function R2Cards() {
 
         {/* ── Orders ────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
+          <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
             Orders
           </h2>
           <div className="flex flex-col gap-[10px]">
@@ -679,15 +687,14 @@ export default function R2Cards() {
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
                 <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
                   Select lab for {orders.find((o) => o.id === popover.code)?.baseLabel}
                 </span>
               </div>
               <div className="py-[4px]">
                 {companyVariants.map((variant) => (
                   <button key={variant.id} onMouseDown={(e) => { e.preventDefault(); handleCompanySelect(variant); }}
-                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}>
+                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left">
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
                     <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>
                   </button>
@@ -698,15 +705,14 @@ export default function R2Cards() {
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
                 <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
                   Select lab for all orders in {orderSets.find((s) => s.id === popover.code)?.label}
                 </span>
               </div>
               <div className="py-[4px]">
                 {setCompanyOptions.map((company) => (
                   <button key={company} onMouseDown={(e) => { e.preventDefault(); handleSetCompanySelect(company); }}
-                    className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}>
+                    className="w-full flex items-center px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left">
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2]">{company}</span>
                   </button>
                 ))}
@@ -716,7 +722,7 @@ export default function R2Cards() {
             <div className="flex flex-col bg-white">
               <div className="flex items-center gap-[8px] px-[12px] py-[8px] border-b border-[var(--shape-outline,rgba(0,0,0,0.1))]">
                 <Icon name="business" size={16} className="text-[var(--foreground-tertiary,#808080)] shrink-0" />
-                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]" style={{ fontFamily: "Lato, sans-serif" }}>
+                <span className="text-[13px] text-[var(--foreground-secondary,#666)] leading-[1.4]">
                   {(() => {
                     const set = orderSets.find((s) => s.id === popover.setId);
                     const child = set?.children.find((c) => c.id === popover.code);
@@ -727,8 +733,7 @@ export default function R2Cards() {
               <div className="py-[4px]">
                 {setChildCompanyVariants.map((variant) => (
                   <button key={variant.id} onMouseDown={(e) => { e.preventDefault(); handleSetChildCompanySelect(variant); }}
-                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
-                    style={{ fontFamily: "Lato, sans-serif" }}>
+                    className="w-full flex items-center gap-[8px] px-[12px] py-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left">
                     <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] w-[80px] shrink-0">{variant.company}</span>
                     <span className="text-[12px] text-[var(--foreground-secondary,#666)] leading-[1.4]">{variant.detail}</span>
                   </button>

@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm --filter previsit-customization build",
+  "outputDirectory": "dist",
+  "installCommand": "cd ../.. && pnpm install"
+}

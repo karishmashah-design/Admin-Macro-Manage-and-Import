@@ -20,7 +20,16 @@
 
   *, *::before, *::after {
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
   }
+  *:hover {
+    scrollbar-color: #d0d0d0 transparent;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; }
+  *:hover::-webkit-scrollbar-thumb { background: #d0d0d0; }
 
   button, a, [role="button"] {
     outline: none;
@@ -130,6 +139,37 @@
     --blue-900: #051a2e;
     --blue-950: #030d17;
     --blue-975: #02080e;
+
+    /* Transparent accent (#1132EE at opacity) */
+    --accent-3:  #1132ee08;
+    --accent-5:  #1132ee0d;
+    --accent-10: #1132ee1a;
+    --accent-20: #1132ee33;
+    --accent-30: #1132ee4d;
+    --accent-40: #1132ee66;
+    --accent-50: #1132ee80;
+    --accent-60: #1132ee99;
+    --accent-70: #1132eeb3;
+    --accent-80: #1132eecc;
+    --accent-90: #1132eee6;
+
+    /* Transparent white — white overlay for dark surfaces */
+    --white-3:  #ffffff08;
+    --white-5:  #ffffff0d;
+    --white-10: #ffffff1a;
+    --white-20: #ffffff33;
+    --white-30: #ffffff4d;
+    --white-40: #ffffff66;
+    --white-50: #ffffff80;
+
+    /* Transparent black — black overlay for light surfaces */
+    --black-3:  #00000008;
+    --black-5:  #0000000d;
+    --black-10: #0000001a;
+    --black-20: #00000033;
+    --black-30: #0000004d;
+    --black-40: #00000066;
+    --black-50: #00000080;
 
     /* Litmus */
     --litmus-25: #f1f3fe;
@@ -385,4 +425,16 @@
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
+}
+
+@layer utilities {
+  .t-title-xl { font-size: var(--t-title-xl-size); font-weight: var(--t-title-xl-weight); line-height: var(--t-title-xl-lh); letter-spacing: var(--t-title-xl-tracking); }
+  .t-title-lg { font-size: var(--t-title-lg-size); font-weight: var(--t-title-lg-weight); line-height: var(--t-title-lg-lh); letter-spacing: var(--t-title-lg-tracking); }
+  .t-title-md { font-size: var(--t-title-md-size); font-weight: var(--t-title-md-weight); line-height: var(--t-title-md-lh); letter-spacing: var(--t-title-md-tracking); }
+  .t-title-sm { font-size: var(--t-title-sm-size); font-weight: var(--t-title-sm-weight); line-height: var(--t-title-sm-lh); letter-spacing: var(--t-title-sm-tracking); }
+  .t-title-xs { font-size: var(--t-title-xs-size); font-weight: var(--t-title-xs-weight); line-height: var(--t-title-xs-lh); letter-spacing: var(--t-title-xs-tracking); }
+  .t-body-lg  { font-size: var(--t-body-lg-size);  font-weight: var(--t-body-lg-weight);  line-height: var(--t-body-lg-lh);  letter-spacing: var(--t-body-lg-tracking);  }
+  .t-body-md  { font-size: var(--t-body-md-size);  font-weight: var(--t-body-md-weight);  line-height: var(--t-body-md-lh);  letter-spacing: var(--t-body-md-tracking);  }
+  .t-body-sm  { font-size: var(--t-body-sm-size);  font-weight: var(--t-body-sm-weight);  line-height: var(--t-body-sm-lh);  letter-spacing: var(--t-body-sm-tracking);  }
+  .t-body-xs  { font-size: var(--t-body-xs-size);  font-weight: var(--t-body-xs-weight);  line-height: var(--t-body-xs-lh);  letter-spacing: var(--t-body-xs-tracking);  }
 }

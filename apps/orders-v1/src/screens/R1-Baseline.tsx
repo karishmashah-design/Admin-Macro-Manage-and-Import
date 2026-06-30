@@ -55,23 +55,25 @@ const cptCodes = [
 ];
 
 const initialOrders = [
-  { id: "1", label: "ECG 12-lead",      detail: "In-house",  icd: "R07.9", checked: true  },
-  { id: "2", label: "Chest X-ray, 2-view", detail: "In-house", icd: "R07.9", checked: false },
+  { id: "ecg-inhouse",  label: "ECG 12-lead", detail: "In-house", icd: "R07.9", checked: true  },
+  { id: "ddimer-quest", label: "D-Dimer",     detail: "Quest",    icd: "R07.9", checked: true  },
 ];
 
-type OrderSetChild = { id: string; label: string; detail: string; checked: boolean };
-type OrderSetItem  = { id: string; label: string; icd: string; children: OrderSetChild[] };
+type OrderSetChild = { id: string; label: string; type: "lab" | "imaging"; detail: string; checked: boolean };
+type OrderSetItem  = { id: string; label: string; icd: string; labDetail?: string; imagingDetail?: string; children: OrderSetChild[] };
 
 const initialOrderSets: OrderSetItem[] = [
   {
     id: "set-1",
     label: "Chest Pain Workup",
     icd: "R07.9",
+    labDetail: "Quest",
+    imagingDetail: "RadNet",
     children: [
-      { id: "s1", label: "Troponin I, High-Sensitivity", detail: "Quest", checked: true },
-      { id: "s2", label: "Basic Metabolic Panel",        detail: "Quest", checked: true },
-      { id: "s3", label: "CBC with Differential",        detail: "Quest", checked: true },
-      { id: "s4", label: "Lipid Panel",                  detail: "Quest", checked: true },
+      { id: "s1", label: "Troponin I, High-Sensitivity", type: "lab",     detail: "Quest",  checked: true },
+      { id: "s2", label: "Basic Metabolic Panel",        type: "lab",     detail: "Quest",  checked: true },
+      { id: "s3", label: "CBC with Differential",        type: "lab",     detail: "Quest",  checked: true },
+      { id: "s4", label: "Chest X-ray, PA & Lateral",   type: "imaging", detail: "RadNet", checked: true },
     ],
   },
 ];
@@ -125,7 +127,7 @@ export default function R1Baseline() {
         {/* Header */}
         <div className="flex items-center h-[48px] px-[8px] py-[12px] shrink-0">
           <div className="flex items-center h-[28px] px-[4px] rounded-[6px]">
-            <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+            <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
               My Scribes
             </h2>
           </div>
@@ -152,7 +154,7 @@ export default function R1Baseline() {
         {/* Patient list */}
         <div className="flex-1 overflow-y-auto scrollable">
           <div className="px-[12px] py-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)]" style={{ fontFeatureSettings: "'ss07' 1" }}>
+            <span className="t-title-sm text-[var(--foreground-secondary,#666)]">
               Thu, Dec 19th (Today)
             </span>
           </div>
@@ -170,7 +172,7 @@ export default function R1Baseline() {
             />
           ))}
           <div className="px-[12px] py-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)]" style={{ fontFeatureSettings: "'ss07' 1" }}>
+            <span className="t-title-sm text-[var(--foreground-secondary,#666)]">
               Wed, Dec 18th
             </span>
           </div>
@@ -209,7 +211,7 @@ export default function R1Baseline() {
         <div className="flex flex-col gap-[4px] max-w-[640px] w-full px-[8px] pt-[24px] pb-[12px] shrink-0">
           <div className="flex gap-[8px] items-center w-full">
             <div className="flex flex-1 items-center h-[48px] p-[12px]">
-              <h1 className="text-[24px] font-bold leading-[1.2] tracking-[0px] text-[var(--foreground-primary,#1a1a1a)]">
+              <h1 className="t-title-xl text-[var(--foreground-primary,#1a1a1a)]">
                 John Doe
               </h1>
             </div>
@@ -221,7 +223,7 @@ export default function R1Baseline() {
               Menu
             </Button>
           </div>
-          <p className="px-[12px] text-[13px] font-normal leading-[1.4] tracking-[0.065px] text-[var(--foreground-secondary,#666)]">
+          <p className="px-[12px] t-body-sm text-[var(--foreground-secondary,#666)]">
             Chest Pain · 42 · M · 15m 36s
           </p>
         </div>
@@ -242,14 +244,14 @@ export default function R1Baseline() {
           {/* Diagnostic Codes */}
           <section>
             <div className="flex items-center justify-between mb-[16px]">
-              <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]">
+              <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)]">
                 Diagnostic Codes
               </h2>
             </div>
 
             {/* ICD10 */}
             <div className="flex items-center justify-between mb-[8px]">
-              <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">
+              <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">
                 ICD10 Codes
               </span>
               <Button
@@ -264,7 +266,7 @@ export default function R1Baseline() {
               {icd10Codes.map((c) => (
                 <div key={c.code} className="flex items-center gap-[4px]">
                   <Link label={c.code} size="small" className="w-[80px] shrink-0" />
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)]">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)]">
                     {c.description}
                   </span>
                 </div>
@@ -273,7 +275,7 @@ export default function R1Baseline() {
 
             {/* CPT */}
             <div className="flex items-center justify-between mb-[8px]">
-              <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">
+              <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">
                 CPT Codes
               </span>
               <Button
@@ -288,7 +290,7 @@ export default function R1Baseline() {
               {cptCodes.map((c) => (
                 <div key={c.code} className="flex items-center gap-[4px]">
                   <Link label={c.code} size="small" className="w-[80px] shrink-0" />
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)]">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)]">
                     {c.description}
                   </span>
                 </div>
@@ -298,7 +300,7 @@ export default function R1Baseline() {
 
           {/* Orders */}
           <section>
-            <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
+            <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
               Orders
             </h2>
             <div className="flex flex-col gap-[8px]">
@@ -306,10 +308,10 @@ export default function R1Baseline() {
               {orders.map((o) => (
                 <div key={o.id} className="flex items-center gap-[8px]">
                   <Checkbox state={o.checked ? "selected" : "unselected"} onChange={() => toggleOrder(o.id)} />
-                  <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{o.label}</span>
+                  <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{o.label}</span>
                   <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>
-                  <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] shrink-0">{o.detail}</span>
-                  <span className="text-[12px] font-bold text-[var(--foreground-brand,#1132ee)] leading-[1.2] shrink-0" style={{ fontFeatureSettings: "'ss07'" }}>{o.icd}</span>
+                  <span className="t-body-xs text-[var(--foreground-secondary,#666)] shrink-0">{o.detail}</span>
+                  <span className="text-[12px] font-bold text-[var(--foreground-brand,#1132ee)] leading-[1.2] shrink-0">{o.icd}</span>
                 </div>
               ))}
 
@@ -323,17 +325,21 @@ export default function R1Baseline() {
                     {/* Set header */}
                     <div className="flex items-center gap-[8px]">
                       <Checkbox state={checkboxState} onChange={() => toggleSet(set.id)} />
-                      <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{set.label}</span>
-                      <span className="text-[12px] font-bold text-[var(--foreground-brand,#1132ee)] leading-[1.2] shrink-0" style={{ fontFeatureSettings: "'ss07'" }}>{set.icd}</span>
+                      <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{set.label}</span>
+                      {set.labDetail && <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>}
+                      {set.labDetail && <span className="t-body-xs text-[var(--foreground-secondary,#666)] shrink-0">{set.labDetail}</span>}
+                      {set.imagingDetail && <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>}
+                      {set.imagingDetail && <span className="t-body-xs text-[var(--foreground-secondary,#666)] shrink-0">{set.imagingDetail}</span>}
+                      <span className="text-[12px] font-bold text-[var(--foreground-brand,#1132ee)] leading-[1.2] shrink-0">{set.icd}</span>
                     </div>
                     {/* Children */}
                     <div className="ml-[12px] pl-[12px] border-l-2 border-[#ebebeb] flex flex-col gap-[4px]">
                       {set.children.map(child => (
                         <div key={child.id} className="flex items-center gap-[8px]">
                           <Checkbox state={child.checked ? "selected" : "unselected"} onChange={() => toggleSetChild(set.id, child.id)} />
-                          <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{child.label}</span>
+                          <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">{child.label}</span>
                           <span className="text-[12px] text-[var(--foreground-tertiary,#b3b3b3)] leading-[1.2] shrink-0">·</span>
-                          <span className="text-[12px] font-normal leading-[1.2] text-[var(--foreground-secondary,#666)] shrink-0">{child.detail}</span>
+                          <span className="t-body-xs text-[var(--foreground-secondary,#666)] shrink-0">{child.detail}</span>
                         </div>
                       ))}
                     </div>

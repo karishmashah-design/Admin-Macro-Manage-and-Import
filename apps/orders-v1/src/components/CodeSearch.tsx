@@ -6,9 +6,10 @@ import type { CodeItem } from "../data/mockCodes";
 type SetOption = {
   id: string;
   baseLabel: string;
-  defaultCompany: string;
+  defaultLabCompany?: string;
+  defaultImagingCompany?: string;
   relatedIcd?: string;
-  children: { label: string }[];
+  children: { label: string; type?: "lab" | "imaging" }[];
 };
 
 type Props = {
@@ -76,7 +77,7 @@ export function CodeSearch({
       </div>
 
       {/* Results */}
-      <div className="overflow-y-auto max-h-[220px] py-[4px]">
+      <div className="overflow-y-auto max-h-[220px] py-[4px]" onMouseDown={(e) => e.stopPropagation()}>
         {filteredAdjacent.length > 0 && (
           <>
             <GroupLabel label="Suggested" />
@@ -124,7 +125,7 @@ function CodeRow({ item, onSelect }: { item: CodeItem; onSelect: (item: CodeItem
 
 // ─── Order search variant ─────────────────────────────────────────────────────
 
-type OrderOption = { id: string; label: string; detail: string; relatedIcd?: string };
+type OrderOption = { id: string; label: string; baseLabel?: string; detail: string; relatedIcd?: string };
 
 type OrderSearchProps = {
   pool: OrderOption[];
@@ -184,7 +185,7 @@ export function OrderSearch({
           </button>
         )}
       </div>
-      <div className="overflow-y-auto max-h-[220px] py-[4px]">
+      <div className="overflow-y-auto max-h-[220px] py-[4px]" onMouseDown={(e) => e.stopPropagation()}>
         {filteredAdjacent.length > 0 && (
           <>
             <GroupLabel label="Suggested" />
@@ -209,7 +210,7 @@ function OrderRow({ item, onSelect }: { item: OrderOption; onSelect: (item: Orde
       style={{ fontFamily: "Lato, sans-serif" }}
     >
       <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] tracking-[0.13px]" style={{ fontFeatureSettings: "'ss07'" }}>
-        {item.label}
+        {item.baseLabel ?? item.label}
       </span>
       <span className="text-[12px] font-normal text-[var(--foreground-secondary,#666)] leading-[1.4]">{item.detail}</span>
     </button>
@@ -246,8 +247,10 @@ export function SetOrOrderSearch({
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   const q = query.toLowerCase();
-  const matchesSet = (s: SetOption) =>
-    s.baseLabel.toLowerCase().includes(q) || s.defaultCompany.toLowerCase().includes(q);
+  const matchesSet = (s: SetOption) => {
+    const companies = [s.defaultLabCompany, s.defaultImagingCompany].filter(Boolean).join(" ").toLowerCase();
+    return s.baseLabel.toLowerCase().includes(q) || companies.includes(q);
+  };
   const matchesOrder = (o: OrderOption) =>
     o.label.toLowerCase().includes(q) || o.detail.toLowerCase().includes(q);
 
@@ -276,7 +279,7 @@ export function SetOrOrderSearch({
           </button>
         )}
       </div>
-      <div className="overflow-y-auto max-h-[280px] py-[4px]">
+      <div className="overflow-y-auto max-h-[280px] py-[4px]" onMouseDown={(e) => e.stopPropagation()}>
         {adjacentSets.length > 0 && (
           <>
             <GroupLabel label="Suggested" />
@@ -313,7 +316,7 @@ function SetRow({ item, onSelect }: { item: SetOption; onSelect: (item: SetOptio
       style={{ fontFamily: "Lato, sans-serif" }}
     >
       <span className="text-[13px] font-bold text-[var(--foreground-primary,#1a1a1a)] leading-[1.2] tracking-[0.13px]">
-        {item.baseLabel} ({item.defaultCompany})
+        {item.baseLabel}{[item.defaultLabCompany, item.defaultImagingCompany].filter(Boolean).length > 0 ? ` (${[item.defaultLabCompany, item.defaultImagingCompany].filter(Boolean).join(" · ")})` : ""}
       </span>
       <span className="text-[12px] font-normal text-[var(--foreground-secondary,#666)] leading-[1.4]">
         {item.children.length} orders{item.relatedIcd ? ` · ${item.relatedIcd}` : ""}

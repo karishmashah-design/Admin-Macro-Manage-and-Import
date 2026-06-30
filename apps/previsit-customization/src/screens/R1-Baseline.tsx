@@ -36,7 +36,7 @@ function Section({ title, subtitle, children }: SectionProps) {
 function SubHeader({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)] mb-[12px]"
+      className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-secondary,#666)] mb-[4px]"
       style={{ fontFeatureSettings: "'ss07' 1" }}
     >
       {children}
@@ -141,20 +141,65 @@ export default function R1Baseline() {
 
           {/* Previsit content — scrollable */}
           <div className="flex-1 overflow-y-auto px-[20px] pb-[8px] pt-[8px]">
-            <div className="flex flex-col gap-[16px] max-w-[800px]">
+            <div className="flex flex-col gap-[24px] max-w-[800px]">
 
               <Section title="At a Glance">
-                <BulletList items={[
-                  "Highly complex 74M with 10+ active chronic conditions including CKD G4, HFrEF (EF 30–35%), T2DM, AF on anticoagulation, and moderate COPD. Frequent utilizer — 2 hospitalizations and 4 ED visits in the past 18 months.",
-                  "Last hospitalized Oct 2025 for acute decompensated heart failure (7-day stay, IV diuresis); discharged with uptitrated furosemide. Prior admission Feb 2025 for hyperkalemia requiring telemetry monitoring.",
-                  "Here today for routine follow-up and medication review. Patient reports increased lower extremity edema over the past 2 weeks and DOE with minimal exertion (walking room to room).",
-                ]} />
+                <div className="flex flex-col gap-[12px]">
+                  <div>
+                    <SubHeader>Stable baseline</SubHeader>
+                    <BulletList items={[
+                      "Highly complex 74M with 10+ active chronic conditions including CKD G4, HFrEF (EF 30–35%), T2DM, AF on anticoagulation, and moderate COPD. Frequent utilizer — 2 hospitalizations and 4 ED visits in the past 18 months.",
+                      "Last hospitalized Oct 2025 for acute decompensated heart failure (7-day stay, IV diuresis); discharged with uptitrated furosemide. Prior admission Feb 2025 for hyperkalemia requiring telemetry monitoring.",
+                    ]} />
+                  </div>
+                  <div>
+                    <SubHeader>Current clinical picture</SubHeader>
+                    <BulletList items={[
+                      "Here today for routine follow-up and medication review. Patient reports increased lower extremity edema over the past 2 weeks and DOE with minimal exertion (walking room to room).",
+                      "At last visit (Jan 9): stable post-discharge, weight down 11 lbs from admission peak, spironolactone held due to K+ 5.6, carvedilol uptitrated to 12.5 mg BID, HbA1c 8.9% — insulin reviewed with diabetes educator. Repeat BMP and BNP ordered for today.",
+                    ]} />
+                  </div>
+                </div>
               </Section>
 
-              <Section title="Last Visit" subtitle="Jan 9 · Athena signed note">
-                <p className="leading-[1.4]">
-                  Stable post-discharge follow-up after Oct 2025 HF admission. Weight down 11 lbs from admission peak. Spironolactone held due to K+ 5.6; plan to reintroduce at lower dose once K+ &lt;5.0. Carvedilol uptitrated to 12.5 mg BID. Discussed goals of care briefly; patient deferred formal conversation to future visit. HbA1c 8.9% — insulin regimen reviewed with diabetes educator same day. Repeat BMP and BNP ordered for today's visit.
-                </p>
+              <Section title="Today's Focus">
+                <div className="flex flex-col gap-[12px]">
+                  <div>
+                    <SubHeader>Orders</SubHeader>
+                    <BulletList items={[
+                      "BMP and BNP — ordered at last visit, results available today",
+                      "Free T4 — work up persistently elevated TSH (6.8 → 5.9 mIU/L)",
+                      "IV iron — ferritin 68, TSAT 16%, suboptimal for ESA therapy; IV iron discussed at last visit",
+                      "Nephrology referral for ESRD planning — eGFR now 17, first time below 18",
+                    ]} />
+                  </div>
+                  <div>
+                    <SubHeader>Adjust</SubHeader>
+                    <BulletList items={[
+                      "Furosemide — consider uptitration; +8 lbs since Jan, BNP re-elevated at 810",
+                      "Insulin glargine — dose review needed; HbA1c worsening to 9.1%",
+                      "Spironolactone — reintroduction still on hold; K+ 5.3, not yet at target <5.0",
+                    ]} />
+                  </div>
+                  <div>
+                    <SubHeader>Follow up</SubHeader>
+                    <BulletList items={[
+                      "Nephrology — notify re: eGFR 17 per CKD care protocol",
+                      "Cardiology — worsening EF (30–35%), re-elevated BNP",
+                      "Vascular surgery — PAD q6-month follow-up due",
+                      "Social work — referral placed Jan 2026, status unknown",
+                    ]} />
+                  </div>
+                  <div>
+                    <SubHeader>Review</SubHeader>
+                    <BulletList items={[
+                      "Goals of care — deferred by patient at last visit",
+                      "CPAP adherence — OSA, AHI 28, non-adherent",
+                      "Depression — PHQ-9 score 11 at last screen (Oct 2025), on sertraline",
+                      "Colonoscopy — due 2026 (tubular adenoma removed Apr 2021)",
+                    ]} />
+                  </div>
+                </div>
               </Section>
 
               <Section title="Vitals" subtitle="Today, 10:14am">
@@ -187,7 +232,7 @@ export default function R1Baseline() {
               <Section title="Lab Results">
                 <div>
                   <SubHeader>Recent Labs (since last visit, Jan 9, 2026)</SubHeader>
-                  <ul className="list-disc mb-[12px]">
+                  <ul className="list-disc mb-[4px]">
                     {[
                       "BNP: 810 pg/mL [H], down from 1,240 at Oct admission peak, but re-elevated vs 740 at last visit; correlates with +8 lb weight gain",
                       "BMP, Potassium: 5.3 mEq/L [H], rising again vs 5.1 at last visit; spironolactone reintroduction on hold",
@@ -229,7 +274,7 @@ export default function R1Baseline() {
               <Section title="Imaging & Diagnostics">
                 <div>
                   <SubHeader>Recent Imaging Results (since last visit, Jan 9, 2026)</SubHeader>
-                  <ul className="list-disc mb-[12px]">
+                  <ul className="list-disc mb-[4px]">
                     <li className="ms-[22.5px]">
                       <span className="leading-[1.4] text-[15px]">No new imaging since last visit.</span>
                     </li>
@@ -378,7 +423,7 @@ export default function R1Baseline() {
           {/* Suggestion chips — scrollable */}
           <div className="flex-1 overflow-y-auto px-[20px] py-[8px]">
             <p
-              className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] mb-[12px]"
+              className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] mb-[4px]"
               style={{ fontFamily: "Lato, sans-serif", fontFeatureSettings: "'ss07' 1" }}
             >
               Get Started

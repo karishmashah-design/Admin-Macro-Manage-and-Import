@@ -43,8 +43,14 @@ export default function R2HoverReveal() {
 
   function handleIcd10Select(item: CodeItem) {
     if (popover?.code) {
-      setIcd10((prev) => prev.map((c) => (c.code === popover.code ? item : c)));
-      setOrders((prev) => prev.map((o) => o.relatedIcd === popover.code ? { ...o, relatedIcd: item.code } : o));
+      const old = popover.code;
+      setIcd10((prev) => prev.map((c) => (c.code === old ? item : c)));
+      setOrders((prev) => prev.map((o) => o.relatedIcd === old ? { ...o, relatedIcd: item.code } : o));
+      setOrderSets((prev) => prev.map((s) => ({
+        ...s,
+        relatedIcd: s.relatedIcd === old ? item.code : s.relatedIcd,
+        children: s.children.map((c) => ({ ...c, relatedIcd: c.relatedIcd === old ? item.code : c.relatedIcd })),
+      })));
     } else {
       setIcd10((prev) => [...prev, item]);
     }
@@ -99,7 +105,8 @@ export default function R2HoverReveal() {
         id: poolItem.id,
         label: poolItem.baseLabel,
         baseLabel: poolItem.baseLabel,
-        defaultCompany: poolItem.defaultCompany,
+        defaultLabCompany: poolItem.defaultLabCompany,
+        defaultImagingCompany: poolItem.defaultImagingCompany,
         relatedIcd: poolItem.relatedIcd,
         children: poolItem.children.map((c) => {
           const existing = s.children.find((sc) => sc.label === c.label);
@@ -171,14 +178,14 @@ export default function R2HoverReveal() {
         {/* ── Diagnostic Codes ─────────────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-[16px]">
-            <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)]">
+            <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)]">
               Diagnostic Codes
             </h2>
           </div>
 
           {/* ICD-10 */}
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">ICD10 Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px] mb-[24px]">
@@ -188,10 +195,10 @@ export default function R2HoverReveal() {
                   className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "icd10", c.code)}
                 >
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">
                     {c.code}
                   </span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {c.description}
                   </span>
                 </div>
@@ -207,7 +214,7 @@ export default function R2HoverReveal() {
 
           {/* CPT */}
           <div className="flex items-center justify-between mb-[8px]">
-            <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
+            <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)]">CPT Codes</span>
             <Button variant="tertiary" size="small" prefix={<Icon name="content_copy" size={16} />}>Copy Codes</Button>
           </div>
           <div className="flex flex-col gap-[2px]">
@@ -217,10 +224,10 @@ export default function R2HoverReveal() {
                   className="flex items-center h-[28px] px-[8px] gap-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer"
                   onClick={(e) => openPopover(e, "cpt", c.code)}
                 >
-                  <span className="w-[80px] shrink-0 text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-brand,#1132ee)]" style={{ fontFeatureSettings: "'ss07'" }}>
+                  <span className="w-[80px] shrink-0 t-title-sm text-[var(--foreground-brand,#1132ee)]">
                     {c.code}
                   </span>
-                  <span className="text-[15px] font-normal leading-[1.4] tracking-[0.15px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {c.description}
                   </span>
                 </div>
@@ -237,7 +244,7 @@ export default function R2HoverReveal() {
 
         {/* ── Orders ───────────────────────────────────────────────── */}
         <section>
-          <h2 className="text-[17px] font-bold leading-[1.2] tracking-[0.34px] text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
+          <h2 className="t-title-lg text-[var(--foreground-primary,#1a1a1a)] mb-[16px]">
             Orders
           </h2>
           <div className="flex flex-col gap-[8px]">
@@ -248,12 +255,12 @@ export default function R2HoverReveal() {
                   onClick={(e) => openPopover(e, "order", o.id)}
                   className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
                 >
-                  <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                  <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                     {o.baseLabel ? `${o.baseLabel} (${o.company})` : o.label}
                   </span>
                 </button>
                 {o.relatedIcd ? (
-                  <Chip label={o.relatedIcd} color="accent" onClick={(e) => openPopover(e, "order-icd", o.id)} />
+                  <Chip label={o.relatedIcd} color="accent" size="XS" onClick={(e) => openPopover(e, "order-icd", o.id)} />
                 ) : (
                   <button
                     onClick={(e) => openPopover(e, "order-icd", o.id)}
@@ -263,7 +270,7 @@ export default function R2HoverReveal() {
                   </button>
                 )}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                  <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                     onClick={() => setOrders((prev) => prev.filter((x) => x.id !== o.id))} aria-label="Remove" />
                 </div>
               </div>
@@ -271,8 +278,15 @@ export default function R2HoverReveal() {
 
             {/* Order sets */}
             {orderSets.map((set) => {
-              const allSameCompany = set.children.every((c) => c.company === set.defaultCompany);
-              const companyLabel = allSameCompany ? set.defaultCompany : "Mixed";
+              const labChildren = set.children.filter((c) => c.type === "lab");
+              const imagingChildren = set.children.filter((c) => c.type === "imaging");
+              const labLabel = labChildren.length > 0
+                ? (labChildren.every((c) => c.company === labChildren[0].company) ? labChildren[0].company : "Mixed labs")
+                : null;
+              const imagingLabel = imagingChildren.length > 0
+                ? (imagingChildren.every((c) => c.company === imagingChildren[0].company) ? imagingChildren[0].company : "Mixed imaging")
+                : null;
+              const companySuffix = [labLabel, imagingLabel].filter(Boolean).join(" · ");
 
               return (
                 <div key={set.id} className="flex flex-col gap-[4px]">
@@ -282,15 +296,15 @@ export default function R2HoverReveal() {
                       onClick={(e) => openPopover(e, "set-title", set.id)}
                       className="flex items-center h-[28px] px-[8px] rounded-[6px] hover:bg-[var(--surface-1,#f7f7f7)] text-left"
                     >
-                      <span className="text-[13px] font-bold leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
-                        {set.baseLabel ?? set.label} ({set.defaultCompany})
+                      <span className="t-title-sm text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                        {set.baseLabel ?? set.label}{companySuffix ? ` (${companySuffix})` : ""}
                       </span>
                     </button>
                     {set.relatedIcd && (
-                      <Chip label={set.relatedIcd} color="accent" />
+                      <Chip label={set.relatedIcd} color="accent" size="XS" />
                     )}
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <IconButton size="small" variant="tertiary" icon={<Icon name="close" size={16} />}
+                      <IconButton size="small" variant="tertiary-neutral" icon={<Icon name="close" size={16} />}
                         onClick={() => setOrderSets((prev) => prev.filter((s) => s.id !== set.id))} aria-label="Remove" />
                     </div>
                   </div>
@@ -304,7 +318,7 @@ export default function R2HoverReveal() {
                           state={child.checked ? "selected" : "unselected"}
                           onChange={() => toggleSetChild(set.id, child.id)}
                         />
-                        <span className="text-[13px] font-normal leading-[1.2] tracking-[0.13px] text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
+                        <span className="t-body-md text-[var(--foreground-primary,#1a1a1a)] whitespace-nowrap">
                           {child.label} ({child.company})
                         </span>
                       </div>
