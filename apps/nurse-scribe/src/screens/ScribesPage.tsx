@@ -51,6 +51,8 @@ const DATE_INCLUDES: Record<string, string[]> = {
   "custom":  ["Today", "Mon", "Sun"],
 };
 
+const ALL_NOTE_TYPES: string[] = ["Admission Assessment", "Shift Assessment", "Triage", "Handoff", "End of Shift Narrative", "Discharge Summary", "ED Assessment"];
+
 const patientGroups: PatientGroup[] = [
   {
     patientId: "p1", name: "Maria Santos", patientMeta: "Hip Fracture · 72 · F",
@@ -156,6 +158,8 @@ export default function ScribesPage({ onSelectScribe }: Props) {
   const [activeDateRange, setActiveDateRange] = useState<string | null>(null);
   const [activeSortBy, setActiveSortBy] = useState("reverse-chron");
   const [activeStatuses, setActiveStatuses] = useState<Set<ScribeItemStatus>>(new Set());
+  const [draftNoteTypes, setDraftNoteTypes] = useState<Set<string>>(new Set());
+  const [activeNoteTypes, setActiveNoteTypes] = useState<Set<string>>(new Set());
 
   const templateRef = useRef<HTMLDivElement>(null);
   const filterBtnRef = useRef<HTMLButtonElement>(null);
@@ -186,6 +190,7 @@ export default function ScribesPage({ onSelectScribe }: Props) {
     setDraftDateRange(activeDateRange);
     setDraftSortBy(activeSortBy);
     setDraftStatuses(new Set(activeStatuses));
+    setDraftNoteTypes(new Set(activeNoteTypes));
     setFilterOpen(true);
   }
 
@@ -193,6 +198,7 @@ export default function ScribesPage({ onSelectScribe }: Props) {
     setActiveDateRange(draftDateRange);
     setActiveSortBy(draftSortBy);
     setActiveStatuses(new Set(draftStatuses));
+    setActiveNoteTypes(new Set(draftNoteTypes));
     setFilterOpen(false);
   }
 
@@ -200,12 +206,21 @@ export default function ScribesPage({ onSelectScribe }: Props) {
     setDraftDateRange(null);
     setDraftSortBy("reverse-chron");
     setDraftStatuses(new Set());
+    setDraftNoteTypes(new Set());
   }
 
   function toggleDraftStatus(status: ScribeItemStatus) {
     setDraftStatuses(prev => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status); else next.add(status);
+      return next;
+    });
+  }
+
+  function toggleDraftNoteType(noteType: string) {
+    setDraftNoteTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(noteType)) next.delete(noteType); else next.add(noteType);
       return next;
     });
   }
@@ -234,6 +249,9 @@ export default function ScribesPage({ onSelectScribe }: Props) {
       if (activeStatuses.size > 0) {
         scribes = scribes.filter(s => activeStatuses.has(s.status));
       }
+      if (activeNoteTypes.size > 0) {
+        scribes = scribes.filter(s => activeNoteTypes.has(s.assessmentType));
+      }
       if (activeDateRange) {
         const allowed = DATE_INCLUDES[activeDateRange] || [];
         scribes = scribes.filter(s => allowed.includes(s.date));
@@ -253,10 +271,10 @@ export default function ScribesPage({ onSelectScribe }: Props) {
     return order
       .map(label => ({ label, patients: groups.filter(pg => mostRecentDate(pg.scribes) === label) }))
       .filter(g => g.patients.length > 0);
-  }, [activeStatuses, activeDateRange, activeSortBy]);
+  }, [activeStatuses, activeDateRange, activeSortBy, activeNoteTypes]);
 
   const allCollapsed = collapsedPatients.size === patientGroups.length;
-  const hasActiveFilters = activeDateRange !== null || activeStatuses.size > 0;
+  const hasActiveFilters = activeDateRange !== null || activeStatuses.size > 0 || activeNoteTypes.size > 0;
 
   return (
     <div className="flex flex-1 overflow-hidden" style={{ fontFamily: "Lato, sans-serif" }}>
@@ -442,7 +460,7 @@ export default function ScribesPage({ onSelectScribe }: Props) {
             </div>
 
             {/* Status */}
-            <div style={{ marginBottom: 6 }}>
+            <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--foreground-secondary,#666)", marginBottom: 4, letterSpacing: "0.2px" }}>Filter by status</div>
               {ALL_STATUSES.map(status => (
                 <label key={status} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: "pointer" }}>
@@ -453,6 +471,22 @@ export default function ScribesPage({ onSelectScribe }: Props) {
                     style={{ accentColor: "#1132ee", width: 14, height: 14, cursor: "pointer", flexShrink: 0 }}
                   />
                   <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)" }}>{status}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Note Type */}
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--foreground-secondary,#666)", marginBottom: 4, letterSpacing: "0.2px" }}>Filter by note type</div>
+              {ALL_NOTE_TYPES.map(noteType => (
+                <label key={noteType} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={draftNoteTypes.has(noteType)}
+                    onChange={() => toggleDraftNoteType(noteType)}
+                    style={{ accentColor: "#1132ee", width: 14, height: 14, cursor: "pointer", flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)" }}>{noteType}</span>
                 </label>
               ))}
             </div>

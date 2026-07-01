@@ -36,6 +36,7 @@ const SIDEBAR_DATE_INCLUDES: Record<string, string[]> = {
   "custom":  ["Today", "Mon", "Sun"],
 };
 const SIDEBAR_DATE_ORDER = ["Today", "Mon", "Sun"];
+const SIDEBAR_ALL_NOTE_TYPES: string[] = ["Admission Assessment", "Shift Assessment", "Triage", "Handoff", "End of Shift Narrative", "Discharge Summary", "ED Assessment"];
 
 // ─── Citations ────────────────────────────────────────────────────────────────
 type CitationSource =
@@ -71,6 +72,10 @@ const SHIFT_CITATIONS: Record<string, CitationSource> = {
   "Chief Complaint":          { type: "transcript", num: 1, quote: '"Right hip pain after a fall at home, unable to bear weight — that\'s what the paramedics handed off."' },
   // Handoff fields
   "Key update this shift":    { type: "manual", by: "Sarah Chen, RN", time: "Today, 19:30" },
+  // Safety measures checkbox — multi-badge adjacent citations demo
+  "Call light in reach":      { type: "transcript", num: 4, quote: '"Call light is clipped to the rail right where she can reach it."' },
+  "Bed in low position":      { type: "transcript", num: 5, quote: '"Bed was in the lowest setting — I checked before I left the room."' },
+  "Side rails up ×2":         { type: "transcript", num: 6, quote: '"Both side rails up, bilateral."' },
 };
 
 function getCitation(_template: string, key: string): CitationSource | null {
@@ -1255,6 +1260,8 @@ export default function ScribeDetailPage({ scribeId }: Props) {
   const [activeSidebarDateRange, setActiveSidebarDateRange] = useState<string | null>(null);
   const [activeSidebarSortBy, setActiveSidebarSortBy] = useState("reverse-chron");
   const [activeSidebarStatuses, setActiveSidebarStatuses] = useState<Set<ScribeItemStatus>>(new Set());
+  const [draftSidebarNoteTypes, setDraftSidebarNoteTypes] = useState<Set<string>>(new Set());
+  const [activeSidebarNoteTypes, setActiveSidebarNoteTypes] = useState<Set<string>>(new Set());
   const sidebarFilterBtnRef = useRef<HTMLButtonElement>(null);
   const sidebarFilterPanelRef = useRef<HTMLDivElement>(null);
 
@@ -1295,6 +1302,7 @@ export default function ScribeDetailPage({ scribeId }: Props) {
     setDraftSidebarDateRange(activeSidebarDateRange);
     setDraftSidebarSortBy(activeSidebarSortBy);
     setDraftSidebarStatuses(new Set(activeSidebarStatuses));
+    setDraftSidebarNoteTypes(new Set(activeSidebarNoteTypes));
     setSidebarFilterOpen(true);
   }
 
@@ -1302,6 +1310,7 @@ export default function ScribeDetailPage({ scribeId }: Props) {
     setActiveSidebarDateRange(draftSidebarDateRange);
     setActiveSidebarSortBy(draftSidebarSortBy);
     setActiveSidebarStatuses(new Set(draftSidebarStatuses));
+    setActiveSidebarNoteTypes(new Set(draftSidebarNoteTypes));
     setSidebarFilterOpen(false);
   }
 
@@ -1309,12 +1318,21 @@ export default function ScribeDetailPage({ scribeId }: Props) {
     setDraftSidebarDateRange(null);
     setDraftSidebarSortBy("reverse-chron");
     setDraftSidebarStatuses(new Set());
+    setDraftSidebarNoteTypes(new Set());
   }
 
   function toggleDraftSidebarStatus(status: ScribeItemStatus) {
     setDraftSidebarStatuses(prev => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status); else next.add(status);
+      return next;
+    });
+  }
+
+  function toggleDraftSidebarNoteType(noteType: string) {
+    setDraftSidebarNoteTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(noteType)) next.delete(noteType); else next.add(noteType);
       return next;
     });
   }
@@ -1391,6 +1409,7 @@ export default function ScribeDetailPage({ scribeId }: Props) {
     let groups = sidebarPatients.map(pg => {
       let scribes = [...pg.scribes];
       if (activeSidebarStatuses.size > 0) scribes = scribes.filter(s => activeSidebarStatuses.has(s.status));
+      if (activeSidebarNoteTypes.size > 0) scribes = scribes.filter(s => activeSidebarNoteTypes.has(s.assessmentType));
       if (activeSidebarDateRange) {
         const allowed = SIDEBAR_DATE_INCLUDES[activeSidebarDateRange] || [];
         scribes = scribes.filter(s => allowed.includes(s.date));
@@ -1405,9 +1424,9 @@ export default function ScribeDetailPage({ scribeId }: Props) {
       return bi - ai;
     });
     return groups;
-  }, [activeSidebarStatuses, activeSidebarDateRange, activeSidebarSortBy]);
+  }, [activeSidebarStatuses, activeSidebarDateRange, activeSidebarSortBy, activeSidebarNoteTypes]);
 
-  const hasSidebarActiveFilters = activeSidebarDateRange !== null || activeSidebarStatuses.size > 0;
+  const hasSidebarActiveFilters = activeSidebarDateRange !== null || activeSidebarStatuses.size > 0 || activeSidebarNoteTypes.size > 0;
 
   function switchScribe(id: string) {
     const info = MARIA_SCRIBES[id];
@@ -1576,17 +1595,17 @@ export default function ScribeDetailPage({ scribeId }: Props) {
         <div key={row.id} data-row-id={row.id} onClick={(e) => openFieldPopover(row.id, e)}
           className="rounded-[8px] hover:bg-[var(--surface-1,#f7f7f7)] cursor-pointer transition-colors"
           style={{ display: "flex", flexDirection: "column", padding: "6px 10px", gap: 2, ...(isMissing && { background: "rgba(187,20,17,0.05)", outline: "1px solid rgba(187,20,17,0.25)", borderRadius: 8 }) }}>
-          <span style={{ fontSize: 11, color: "var(--foreground-secondary,#888)", fontFamily: "Lato, sans-serif", letterSpacing: "0.2px", display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 11, color: "var(--foreground-secondary,#888)", fontFamily: "Lato, sans-serif", letterSpacing: "0.2px" }}>
             <span>{row.label}{row.required && <span style={{ color: "#e01010", fontWeight: 700, fontSize: 13, marginLeft: 2 }}>*</span>}</span>
+          </span>
+          <span style={{ fontSize: 13, color: isMissing ? "#bb1411" : (row.selected ? "var(--foreground-primary,#1a1a1a)" : "#ccc"), fontFamily: "Lato, sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
+            {row.selected || (isMissing ? "Required — tap to fill" : "—")}
             {showCitations && row.selected && (() => {
               const cit = getCitation(activeTab, row.id);
               if (!cit || cit.type !== "transcript") return null;
               const label = String(cit.num);
               return <span onMouseEnter={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCitationPopover({ source: cit, x: r.left, y: r.bottom + 6 }); }} onMouseLeave={() => setCitationPopover(null)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px", borderRadius: 4, background: "rgba(17,50,238,0.1)", color: "#1132ee", fontSize: 10, fontWeight: 700, cursor: "default", lineHeight: "18px", minWidth: 16 }}>{label}</span>;
             })()}
-          </span>
-          <span style={{ fontSize: 13, color: isMissing ? "#bb1411" : (row.selected ? "var(--foreground-primary,#1a1a1a)" : "#ccc"), fontFamily: "Lato, sans-serif" }}>
-            {row.selected || (isMissing ? "Required — tap to fill" : "—")}
           </span>
         </div>
       );
@@ -1638,14 +1657,8 @@ export default function ScribeDetailPage({ scribeId }: Props) {
             return (
               <div key={i} style={{ display: "flex", flexDirection: "column", padding: "6px 10px", gap: 3, cursor: "text" }}
                 onClick={() => setEditingGridField({ key, idx: i })}>
-                <span style={{ fontSize: 11, color: "var(--foreground-secondary,#888)", fontFamily: "Lato, sans-serif", letterSpacing: "0.2px", display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 11, color: "var(--foreground-secondary,#888)", fontFamily: "Lato, sans-serif", letterSpacing: "0.2px" }}>
                   <span>{f.label}{f.required && <span style={{ color: "#e01010", fontWeight: 700, fontSize: 13, marginLeft: 2 }}>*</span>}</span>
-                  {showCitations && !isEmpty && (() => {
-                    const cit = getCitation(activeTab, f.label);
-                    if (!cit || cit.type !== "transcript") return null;
-                    const label = String(cit.num);
-                    return <span onMouseEnter={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCitationPopover({ source: cit, x: r.left, y: r.bottom + 6 }); }} onMouseLeave={() => setCitationPopover(null)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px", borderRadius: 4, background: "rgba(17,50,238,0.1)", color: "#1132ee", fontSize: 10, fontWeight: 700, cursor: "default", lineHeight: "18px", minWidth: 16 }}>{label}</span>;
-                  })()}
                 </span>
                 {isEditing ? (
                   row.cols === 1
@@ -1667,8 +1680,14 @@ export default function ScribeDetailPage({ scribeId }: Props) {
                     {fieldMissing ? "Required — click to fill" : "Type here..."}
                   </span>
                 ) : (
-                  <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)", fontFamily: "Lato, sans-serif" }}>
+                  <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)", fontFamily: "Lato, sans-serif", display: "flex", alignItems: "center", gap: 4 }}>
                     {f.value}
+                    {showCitations && !isEmpty && (() => {
+                      const cit = getCitation(activeTab, f.label);
+                      if (!cit || cit.type !== "transcript") return null;
+                      const label = String(cit.num);
+                      return <span onMouseEnter={(e) => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); setCitationPopover({ source: cit, x: r.left, y: r.bottom + 6 }); }} onMouseLeave={() => setCitationPopover(null)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px", borderRadius: 4, background: "rgba(17,50,238,0.1)", color: "#1132ee", fontSize: 10, fontWeight: 700, cursor: "default", lineHeight: "18px", minWidth: 16 }}>{label}</span>;
+                    })()}
                   </span>
                 )}
               </div>
@@ -2088,12 +2107,21 @@ export default function ScribeDetailPage({ scribeId }: Props) {
                 </label>
               ))}
             </div>
-            <div style={{ marginBottom: 6 }}>
+            <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--foreground-secondary,#666)", marginBottom: 4, letterSpacing: "0.2px" }}>Filter by status</div>
               {SIDEBAR_ALL_STATUSES.map(status => (
                 <label key={status} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: "pointer" }}>
                   <input type="checkbox" checked={draftSidebarStatuses.has(status)} onChange={() => toggleDraftSidebarStatus(status)} style={{ accentColor: "#1132ee", width: 14, height: 14, cursor: "pointer", flexShrink: 0 }} />
                   <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)" }}>{status}</span>
+                </label>
+              ))}
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--foreground-secondary,#666)", marginBottom: 4, letterSpacing: "0.2px" }}>Filter by note type</div>
+              {SIDEBAR_ALL_NOTE_TYPES.map(noteType => (
+                <label key={noteType} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: "pointer" }}>
+                  <input type="checkbox" checked={draftSidebarNoteTypes.has(noteType)} onChange={() => toggleDraftSidebarNoteType(noteType)} style={{ accentColor: "#1132ee", width: 14, height: 14, cursor: "pointer", flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: "var(--foreground-primary,#1a1a1a)" }}>{noteType}</span>
                 </label>
               ))}
             </div>
